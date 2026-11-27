@@ -25,7 +25,7 @@ image (ImageBitmap)
   -> detect.worker.ts: grayscale -> blur -> method (threshold.ts or quadtree.ts) -> size filter, max count
   -> BlobRegion[] in source pixels
   -> render.ts: draw layers onto a canvas the size of the source
-  -> PNG export from that canvas
+  -> export: encode that canvas, or redraw it with render() at the export scale, as JPEG / PNG / WebP
 ```
 
 - `App.tsx` re-runs detection only when `settings.detect` changes (compared as a JSON string) or the image changes, after an 80 ms debounce. Every other change only redraws.

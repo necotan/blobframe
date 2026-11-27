@@ -36,7 +36,7 @@
 - **接続線**: 四角を近い順に1本につなぐか、近いもの同士をつなぐか、画像の下・中央・上から各四角へ線を引きます(スナップライン)。直線か曲線、実線か破線を選べます。
 - **マーカーとラベル**: 中心に十字、点、円を表示し、`X{x:03}Y{y:03}` のようなテンプレートからラベルを作ります(-> `X075Y034`)。
 - **プリセット**: 9種類の標準の見た目(Default、Tracker、Quadtree Mesh、Minimal、Invert、Blueprint、Hacker、ESP、Aimbot)から始められます。自分の設定は JSON ファイルとして保存、読み込みできます。
-- **書き出し**: 元の解像度で PNG に書き出します。
+- **書き出し**: JPEG、PNG、WebP から選び、品質と倍率(元の解像度の 10-100%)を指定して書き出します。
 
 処理はすべてブラウザ内で行い、画像をアップロードすることはありません。
 
@@ -47,7 +47,7 @@
 2. **Preset** フォルダで見た目を選びます。
 3. **Detect** フォルダで、四角が思った場所に付くまで検出を調整します。
 4. ほかのフォルダ(Box effect、Fill、Stroke、Lines、Marker、Label、Background)で見た目を変えます。
-5. **Export PNG** で書き出します。
+5. **File** フォルダで形式、品質、倍率を選び、**Export image** で書き出します。JPEG(既定)ならカメラの写真と同じくらいの大きさです。PNG は劣化しませんが数倍の大きさになります。WebP は最も小さくなりますが、大きな写真では数十秒かかり、Safari では PNG で保存されます。
 
 線の太さや文字の大きさは画像の大きさに合わせて変わるので、同じプリセットなら小さい画像でも大きい画像でも同じ見た目になります。
 
@@ -110,12 +110,13 @@ git config core.hooksPath .githooks
 ```text
 /
 ├── src/
-│   ├── App.tsx            # 画像の読み込み(ファイル、ドロップ、貼り付け)、検出と描画の実行、PNG 書き出し
+│   ├── App.tsx            # 画像の読み込み(ファイル、ドロップ、貼り付け)、検出と描画の実行、書き出し
 │   ├── components/        # ControlPane(Tweakpane の設定パネル)
 │   │   └── pane/          # Tweakpane のカスタマイズ(自前のドロップダウン、フォルダのアイコン、CSS)
 │   └── lib/
 │       ├── settings.ts    # 設定の型、既定値、保存済み JSON の読み込み
 │       ├── presets.ts     # 標準プリセット
+│       ├── exportSettings.ts # 書き出しの形式、品質、倍率
 │       ├── detect/        # detector.ts(メインスレッド側)、detect.worker.ts、threshold.ts、quadtree.ts、common.ts
 │       └── render/        # render.ts(レイヤー描画)、connections.ts(線の組み合わせ)、label.ts(ラベルのテンプレート)
 ├── docs/                  # 設計ドキュメント(requirements、architecture、settings)

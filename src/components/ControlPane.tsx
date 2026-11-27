@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
-import { Pane } from 'tweakpane'
+import { Pane, type ButtonApi } from 'tweakpane'
 import { downloadBlob, pickFile, timestamp } from '../lib/download'
+import type { ExportSettings } from '../lib/exportSettings'
 import { PRESETS, matchPreset } from '../lib/presets'
 import { DEFAULT_SETTINGS, cloneSettings, mergeSettings, type Settings } from '../lib/settings'
 import { DropdownPlugin } from './pane/dropdownPlugin'
@@ -8,26 +9,32 @@ import { replaceFolderMarks } from './pane/folderIcons'
 import './pane/pane.css'
 
 const CUSTOM = 'custom'
+const EXPORT_TITLE = 'Export image'
 const PRESET_OPTIONS = Object.fromEntries([...PRESETS.map((p) => [p.name, p.id]), ['Custom', CUSTOM]])
 
 type Props = {
   /** パネル生成時の初期値。変わるとパネルを作り直すので、呼び出し側で固定した値を渡すこと */
   initial: Settings
   onChange: (settings: Settings) => void
+  /** 書き出し設定の初期値。initial と同じく固定した値を渡すこと */
+  initialExport: ExportSettings
+  onExportChange: (settings: ExportSettings) => void
   onOpenImage: () => void
-  onExportImage: () => void
+  /** 書き出しが終わるまでボタンを押せなくするので、終わったら解決する Promise を返すこと */
+  onExportImage: () => Promise<void>
   canExport: boolean
 }
 
 export function ControlPane(props: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const propsRef = useRef(props)
-  const exportButtonRef = useRef<{ disabled: boolean } | null>(null)
+  const exportButtonRef = useRef<ButtonApi | null>(null)
+  const exportingRef = useRef(false)
 
   // パネルは一度だけ作り、最新のコールバックは ref 経由で呼ぶ
   useLayoutEffect(() => {
     propsRef.current = props
-    if (exportButtonRef.current) exportButtonRef.current.disabled = !props.canExport
+    if (exportButtonRef.current) exportButtonRef.current.disabled = !props.canExport || exportingRef.current
   })
 
   useEffect(() => {
@@ -46,10 +53,34 @@ export function ControlPane(props: Props) {
       afterChange()
     }
 
+    const exportParams = { ...props.initialExport }
     const file = pane.addFolder({ title: 'File' })
     file.addButton({ title: 'Open image' }).on('click', () => propsRef.current.onOpenImage())
-    const exportButton = file.addButton({ title: 'Export PNG' })
-    exportButton.on('click', () => propsRef.current.onExportImage())
+    const format = file.addBinding(exportParams, 'format', { options: { PNG: 'png', JPEG: 'jpeg', WebP: 'webp' } })
+    const quality = file.addBinding(exportParams, 'quality', { min: 0.5, max: 1, step: 0.01 })
+    const scale = file.addBinding(exportParams, 'scale', { min: 0.1, max: 1, step: 0.05 })
+    // 書き出しの設定は Settings に含めないので、パネル全体の change では扱わない
+    const exportBindings = new Set<unknown>([format, quality, scale])
+    for (const b of [format, quality, scale]) {
+      b.on('change', () => {
+        syncVisibility()
+        propsRef.current.onExportChange({ ...exportParams })
+      })
+    }
+    const exportButton = file.addButton({ title: EXPORT_TITLE })
+    // 大きな画像の WebP は書き出しに数十秒かかるので、その間は押せなくして進行中と分かるようにする
+    exportButton.on('click', async () => {
+      exportingRef.current = true
+      exportButton.disabled = true
+      exportButton.title = 'Exporting...'
+      try {
+        await propsRef.current.onExportImage()
+      } finally {
+        exportingRef.current = false
+        exportButton.title = EXPORT_TITLE
+        exportButton.disabled = !propsRef.current.canExport
+      }
+    })
     exportButton.disabled = !propsRef.current.canExport
     exportButtonRef.current = exportButton
 
@@ -153,6 +184,7 @@ export function ControlPane(props: Props) {
     label.addBinding(params.label, 'backgroundColor', { label: 'bg color' })
 
     function syncVisibility() {
+      quality.hidden = exportParams.format === 'png'
       // 未知の method は Worker が threshold として扱うので、それに合わせる
       for (const b of thresholdBindings) b.hidden = params.detect.method === 'quadtree'
       for (const b of quadtreeBindings) b.hidden = params.detect.method !== 'quadtree'
@@ -179,7 +211,7 @@ export function ControlPane(props: Props) {
     replaceFolderMarks(pane.element)
 
     pane.on('change', (e) => {
-      if (replacing || e.target === presetBinding) return
+      if (replacing || e.target === presetBinding || exportBindings.has(e.target)) return
       afterChange()
     })
 
@@ -187,7 +219,7 @@ export function ControlPane(props: Props) {
       exportButtonRef.current = null
       pane.dispose()
     }
-  }, [props.initial])
+  }, [props.initial, props.initialExport])
 
   return <div ref={containerRef} />
 }

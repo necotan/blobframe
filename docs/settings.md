@@ -11,6 +11,20 @@ The `Settings` object (`src/lib/settings.ts`) is the app state, what is saved in
 
 Both are plain `JSON.stringify(settings)` with no version field.
 
+Export settings are not part of `Settings`: presets would otherwise change the export format, and changing the format would make the preset list show Custom. They are stored separately and are not in preset files.
+
+| Place | Key | Written by |
+|---|---|---|
+| `localStorage` | `blobframe:export` | `App.tsx`, on every change |
+
+`mergeExportSettings` in `src/lib/exportSettings.ts` reads it; an unknown format or an out-of-range number falls back to the default.
+
+| Key | Type | Meaning |
+|---|---|---|
+| `format` | `jpeg` / `png` / `webp` | Default `jpeg`. A browser that cannot encode the format returns PNG (Safari with WebP); the file extension follows the actual type. |
+| `quality` | 0-1 | JPEG and WebP only. Default 0.92. |
+| `scale` | 0.1-1 | Output size relative to the source. Below 1 the image is redrawn at that size, not resampled from the full-size canvas. |
+
 The selected built-in preset is not stored. The panel finds it by comparing the settings with each preset (`matchPreset` in `presets.ts`), and shows Custom when none matches.
 
 ## Loading rules
