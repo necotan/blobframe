@@ -2,12 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ControlPane } from './components/ControlPane'
 import { createDetector } from './lib/detect/detector'
 import { downloadBlob, pickFile, timestamp } from './lib/download'
+import { extensionOf, mergeExportSettings, type ExportSettings } from './lib/exportSettings'
 import { loadMonoFont } from './lib/fonts'
 import { render } from './lib/render/render'
 import { DEFAULT_SETTINGS, mergeSettings, type Settings } from './lib/settings'
 import type { BlobRegion } from './lib/types'
 
 const STORAGE_KEY = 'blobframe:settings'
+const EXPORT_STORAGE_KEY = 'blobframe:export'
 // スライダーを動かしている間に検出が詰まらないよう、止まってから走らせる
 const DETECT_DEBOUNCE_MS = 80
 
@@ -20,11 +22,30 @@ function loadSettings(): Settings {
   }
 }
 
+function loadExportSettings(): ExportSettings {
+  try {
+    return mergeExportSettings(JSON.parse(localStorage.getItem(EXPORT_STORAGE_KEY) ?? 'null'))
+  } catch {
+    return mergeExportSettings(null)
+  }
+}
+
+function saveToStorage(key: string, value: unknown) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    // プライベートブラウズ等で保存できなくても編集は続けられる
+  }
+}
+
 type Detection = { source: ImageBitmap; regions: BlobRegion[] }
 
 export default function App() {
   const [initialSettings] = useState(loadSettings)
   const [settings, setSettings] = useState(initialSettings)
+  const [initialExport] = useState(loadExportSettings)
+  // 書き出しの設定は描画に使わないので、state にして再描画させない
+  const exportSettingsRef = useRef(initialExport)
   const [image, setImage] = useState<ImageBitmap | null>(null)
   const [detection, setDetection] = useState<Detection | null>(null)
   const [dragging, setDragging] = useState(false)
@@ -80,11 +101,12 @@ export default function App() {
 
   const handleSettingsChange = useCallback((next: Settings) => {
     setSettings(next)
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-    } catch {
-      // プライベートブラウズ等で保存できなくても編集は続けられる
-    }
+    saveToStorage(STORAGE_KEY, next)
+  }, [])
+
+  const handleExportChange = useCallback((next: ExportSettings) => {
+    exportSettingsRef.current = next
+    saveToStorage(EXPORT_STORAGE_KEY, next)
   }, [])
 
   const loadFile = useCallback(async (file: File | null | undefined) => {
@@ -103,11 +125,24 @@ export default function App() {
 
   const openImage = useCallback(async () => loadFile(await pickFile('image/*')), [loadFile])
 
-  const exportImage = useCallback(() => {
-    canvasRef.current?.toBlob((blob) => {
-      if (blob) downloadBlob(blob, `blobframe-${timestamp()}.png`)
-    }, 'image/png')
-  }, [])
+  const exportImage = useCallback(async () => {
+    const canvas = canvasRef.current
+    if (!canvas || !image) return
+    const { format, quality, scale } = exportSettingsRef.current
+    let target = canvas
+    if (scale !== 1) {
+      // 表示中の canvas を縮めるより描き直すほうが、線や文字がにじまない
+      target = document.createElement('canvas')
+      target.width = Math.max(1, Math.round(image.width * scale))
+      target.height = Math.max(1, Math.round(image.height * scale))
+      const ctx = target.getContext('2d')!
+      ctx.imageSmoothingQuality = 'high'
+      ctx.scale(target.width / image.width, target.height / image.height)
+      render(ctx, image, regions, settings)
+    }
+    const blob = await new Promise<Blob | null>((resolve) => target.toBlob(resolve, `image/${format}`, quality))
+    if (blob) downloadBlob(blob, `blobframe-${timestamp()}.${extensionOf(blob)}`)
+  }, [image, regions, settings])
 
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
@@ -157,6 +192,8 @@ export default function App() {
         <ControlPane
           initial={initialSettings}
           onChange={handleSettingsChange}
+          initialExport={initialExport}
+          onExportChange={handleExportChange}
           onOpenImage={openImage}
           onExportImage={exportImage}
           canExport={image !== null}

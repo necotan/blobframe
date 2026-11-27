@@ -36,7 +36,7 @@ Open an image, and blobframe finds regions and frames them. Every part of the lo
 - **Lines**: connect boxes in a chain or to their nearest neighbors, or draw snaplines from the bottom, center, or top of the image to each box, with straight or curved, solid or dashed lines.
 - **Markers and labels**: a cross, dot, or circle at the center, and labels from a template such as `X{x:03}Y{y:03}` (-> `X075Y034`).
 - **Presets**: nine built-in looks (Default, Tracker, Quadtree Mesh, Minimal, Invert, Blueprint, Hacker, ESP, Aimbot) to start from. Your own settings can be saved and loaded as JSON files.
-- **Export**: PNG at the original resolution.
+- **Export**: JPEG, PNG, or WebP, with quality and scale (10-100% of the original resolution).
 
 All processing runs in your browser. Images are never uploaded.
 
@@ -47,7 +47,7 @@ Images only for now; video support is planned. See [docs/requirements.md](docs/r
 2. Pick a look in the **Preset** folder.
 3. Adjust detection in the **Detect** folder until the boxes land where you want.
 4. Change the look in the other folders (Box effect, Fill, Stroke, Lines, Marker, Label, Background).
-5. Click **Export PNG**.
+5. Pick the format, quality, and scale in the **File** folder, then click **Export image**. JPEG (the default) stays about the size of a camera photo; PNG is lossless but several times larger. WebP is the smallest but can take tens of seconds for a large photo, and Safari saves it as PNG.
 
 Line widths and text sizes scale with the image, so a preset looks the same on small and large images.
 
@@ -110,12 +110,13 @@ This project is built with the following technologies and open-source libraries.
 ```text
 /
 ├── src/
-│   ├── App.tsx            # Image loading (file, drop, paste), detection and render scheduling, PNG export
+│   ├── App.tsx            # Image loading (file, drop, paste), detection and render scheduling, export
 │   ├── components/        # ControlPane (Tweakpane settings panel)
 │   │   └── pane/          # Tweakpane customizations (own dropdown plugin, folder icons, CSS)
 │   └── lib/
 │       ├── settings.ts    # Settings type, defaults, loading saved JSON
 │       ├── presets.ts     # Built-in presets
+│       ├── exportSettings.ts # Export format, quality, scale
 │       ├── detect/        # detector.ts (main thread), detect.worker.ts, threshold.ts, quadtree.ts, common.ts
 │       └── render/        # render.ts (layers), connections.ts (line pairs), label.ts (label templates)
 ├── docs/                  # Design docs (requirements, architecture, settings)
