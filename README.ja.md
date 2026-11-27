@@ -15,7 +15,14 @@
   <img src="https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white">
   <img src="https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=white">
   <img src="https://img.shields.io/badge/Tweakpane-4-000000">
+  <br>
+  <a href="https://blobframe.vercel.app"><img src="https://img.shields.io/badge/Demo-Vercel-000000?logo=vercel&logoColor=white"></a>
 </p>
+
+## クイックスタート
+インストール不要で、ブラウザですぐに試せます。
+
+**[blobframe.vercel.app](https://blobframe.vercel.app)**
 
 ## 機能
 画像を開くと、明るい(または暗い)領域を見つけて四角で囲みます。見た目はすべて設定パネルから変えられ、スライダーを動かすとその場で描き直されます。
@@ -91,6 +98,7 @@ git config core.hooksPath .githooks
 - **フォント**: [Roboto Mono](https://fonts.google.com/specimen/Roboto+Mono)([Fontsource](https://fontsource.org/) 経由、SIL OFL 1.1)
 - **検出**: Web Worker 上の独自実装(しきい値、連結成分ラベリング)
 - **描画**: Canvas 2D
+- **ホスティング**: [Vercel](https://vercel.com/)
 
 ## ディレクトリ構成
 

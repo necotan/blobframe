@@ -13,7 +13,7 @@ How blobframe is built and how to extend it. Features and roadmap are in `docs/r
 | Font | Roboto Mono, bundled with `@fontsource-variable/roboto-mono` | One font for the panel, the page, and canvas labels on every device. Bundled instead of a font CDN so the app makes no third-party requests. |
 | Detection | Web Worker, own TypeScript | Keeps the UI responsive. Simple methods do not need a library. |
 | Drawing | Canvas 2D | Enough for images. WebGL2 is an option when video needs more speed. |
-| Hosting | Static hosting (not decided) | There is no backend. |
+| Hosting | Vercel (Hobby), `blobframe.vercel.app` | Static files only, so the free plan is enough. Pull requests get preview URLs, and response headers (e.g. COOP/COEP that WASM threads may need for video) can be set in `vercel.json`. The Hobby plan is non-commercial only. |
 
 Possible later additions: OpenCV.js loaded on demand for heavy methods (about 10 MB, so never in the main bundle), Rust compiled to WASM for speed, WebCodecs and Mediabunny for video.
 

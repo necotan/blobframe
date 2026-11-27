@@ -19,6 +19,7 @@ blobframe: a browser tool that detects regions (blobs) in an image and draws box
 
 - Vite + React + TypeScript, Tailwind CSS v4, Tweakpane v4 for the settings panel.
 - Detection runs in a Web Worker; drawing uses Canvas 2D. No backend.
+- Hosting: Vercel (`https://blobframe.vercel.app`), deployed from `main`; pull requests get preview URLs.
 
 ## Commands
 

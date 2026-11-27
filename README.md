@@ -15,7 +15,14 @@
   <img src="https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white">
   <img src="https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=white">
   <img src="https://img.shields.io/badge/Tweakpane-4-000000">
+  <br>
+  <a href="https://blobframe.vercel.app"><img src="https://img.shields.io/badge/Demo-Vercel-000000?logo=vercel&logoColor=white"></a>
 </p>
+
+## Quick Start
+Try it right away in your browser, no setup needed.
+
+**[blobframe.vercel.app](https://blobframe.vercel.app)**
 
 ## Features
 Open an image, and blobframe finds bright (or dark) regions and frames them. Every part of the look can be changed from the settings panel, and the result is redrawn as you move a slider.
@@ -91,6 +98,7 @@ This project is built with the following technologies and open-source libraries.
 - **Font**: [Roboto Mono](https://fonts.google.com/specimen/Roboto+Mono) via [Fontsource](https://fontsource.org/) (Licensed under SIL OFL 1.1)
 - **Detection**: own implementation in a Web Worker (threshold, connected-component labeling)
 - **Drawing**: Canvas 2D
+- **Hosting**: [Vercel](https://vercel.com/)
 
 ## Project Structure
 
