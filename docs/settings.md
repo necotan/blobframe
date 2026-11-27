@@ -92,8 +92,9 @@ The selected built-in preset is not stored. The panel finds it by comparing the 
 
 | Key | Type | Meaning |
 |---|---|---|
-| `rule` | `none` / `chain` / `nearest` | `chain`: greedy nearest path from the largest region. `nearest`: each region to its `neighbors` nearest. |
+| `rule` | `none` / `chain` / `nearest` / `snapline` | `chain`: greedy nearest path from the largest region. `nearest`: each region to its `neighbors` nearest. `snapline`: one line per region from `origin`. |
 | `neighbors` | 1-5 | Used by `nearest`. |
+| `origin` | `bottom` / `center` / `top` | Used by `snapline`. `bottom`: from the middle of the bottom edge to the middle of the box's bottom edge. `top`: the same with top edges. `center`: image center to box center. |
 | `shape` | `straight` / `curve` | |
 | `curvature` | -1 to 1 | Control point offset as a ratio of the line length. Sign picks the side. |
 | `dashed` | boolean | |

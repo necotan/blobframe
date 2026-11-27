@@ -121,8 +121,11 @@ export function ControlPane(props: Props) {
     stroke.addBinding(params.stroke, 'width', { min: 0.5, max: 10, step: 0.5 })
 
     const lines = pane.addFolder({ title: 'Lines' })
-    lines.addBinding(params.lines, 'rule', { options: { None: 'none', Chain: 'chain', Nearest: 'nearest' } })
+    lines.addBinding(params.lines, 'rule', {
+      options: { None: 'none', Chain: 'chain', Nearest: 'nearest', Snapline: 'snapline' },
+    })
     const neighbors = lines.addBinding(params.lines, 'neighbors', { min: 1, max: 5, step: 1 })
+    const origin = lines.addBinding(params.lines, 'origin', { options: { Bottom: 'bottom', Center: 'center', Top: 'top' } })
     lines.addBinding(params.lines, 'shape', { options: { Straight: 'straight', Curve: 'curve' } })
     const curvature = lines.addBinding(params.lines, 'curvature', { min: -1, max: 1, step: 0.05 })
     lines.addBinding(params.lines, 'dashed')
@@ -156,6 +159,7 @@ export function ControlPane(props: Props) {
       meshSpacing.hidden = params.fill.mode !== 'mesh'
       meshWidth.hidden = params.fill.mode !== 'mesh'
       neighbors.hidden = params.lines.rule !== 'nearest'
+      origin.hidden = params.lines.rule !== 'snapline'
       curvature.hidden = params.lines.shape !== 'curve'
     }
     function syncPreset() {

@@ -41,11 +41,11 @@ What blobframe does and what is planned. How the code is organized is in `docs/a
 - In-box effects: invert, monochrome, zoom.
 - Fill: none, solid, mesh (spacing and line width).
 - Stroke: on or off, solid, dashed, or corners only.
-- Lines: none, chain (greedy nearest path from the largest region), nearest k; straight or curved (curvature); dashed; color, width, opacity.
+- Lines: none, chain (greedy nearest path from the largest region), nearest k, snapline (from the bottom, center, or top of the image to each region); straight or curved (curvature); dashed; color, width, opacity.
 - Marker: none, cross, dot, circle.
 - Label: template (`{x:03}` style placeholders), coordinates in pixels or 0-100, position, font size, colors, background band.
 - Output: PNG at the source resolution.
-- Presets: six built-in looks (Default, Tracker, Quadtree Mesh, Minimal, Invert, Blueprint). Applying one replaces all settings, detection included. The list shows Custom when the settings match no preset.
+- Presets: nine built-in looks (Default, Tracker, Quadtree Mesh, Minimal, Invert, Blueprint, Hacker, ESP, Aimbot). Applying one replaces all settings, detection included. The list shows Custom when the settings match no preset.
 - Settings: saved automatically in the browser; saved and loaded as JSON files. Choosing the Default preset resets to defaults.
 - UI text is English.
 

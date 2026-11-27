@@ -45,8 +45,10 @@ export type Settings = {
     width: number
   }
   lines: {
-    rule: 'none' | 'chain' | 'nearest'
+    rule: 'none' | 'chain' | 'nearest' | 'snapline'
     neighbors: number
+    /** snapline: 線を出す画像上の点。bottom と top は辺の中央から箱の同じ側の辺の中央へ、center は中心同士を結ぶ */
+    origin: 'bottom' | 'center' | 'top'
     shape: 'straight' | 'curve'
     curvature: number
     dashed: boolean
@@ -115,6 +117,7 @@ export const DEFAULT_SETTINGS: Settings = {
   lines: {
     rule: 'nearest',
     neighbors: 1,
+    origin: 'bottom',
     shape: 'curve',
     curvature: 0.3,
     dashed: true,
