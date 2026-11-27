@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { ControlPane } from './components/ControlPane'
 import { createDetector } from './lib/detect/detector'
 import { downloadBlob, pickFile, timestamp } from './lib/download'
 import { extensionOf, mergeExportSettings, type ExportSettings } from './lib/exportSettings'
 import { loadMonoFont } from './lib/fonts'
+import { loadImage } from './lib/image'
 import { render } from './lib/render/render'
 import { DEFAULT_SETTINGS, mergeSettings, type Settings } from './lib/settings'
 import type { BlobRegion } from './lib/types'
@@ -38,6 +39,11 @@ function saveToStorage(key: string, value: unknown) {
   }
 }
 
+// main の左右の余白 (p-4) と下の余白 (pb-8) を足す。高すぎるとパネルが使えないので画面の 60% までにする
+function stackHeight(image: { width: number; height: number }): string {
+  return `min(calc((100vw - 2rem) * ${image.height / image.width} + 3rem), 60dvh)`
+}
+
 type Detection = { source: ImageBitmap; regions: BlobRegion[] }
 
 export default function App() {
@@ -47,6 +53,7 @@ export default function App() {
   // 書き出しの設定は描画に使わないので、state にして再描画させない
   const exportSettingsRef = useRef(initialExport)
   const [image, setImage] = useState<ImageBitmap | null>(null)
+  const [originalSize, setOriginalSize] = useState<{ width: number; height: number } | null>(null)
   const [detection, setDetection] = useState<Detection | null>(null)
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState(false)
@@ -112,8 +119,9 @@ export default function App() {
   const loadFile = useCallback(async (file: File | null | undefined) => {
     if (!file || !file.type.startsWith('image/')) return
     try {
-      const bitmap = await createImageBitmap(file)
+      const { bitmap, original } = await loadImage(file)
       setError(false)
+      setOriginalSize(original)
       setImage((prev) => {
         prev?.close()
         return bitmap
@@ -154,9 +162,12 @@ export default function App() {
   }, [loadFile])
 
   return (
-    <div className="flex h-dvh flex-col bg-neutral-950 text-neutral-200 md:flex-row">
+    // 縦長の画面では画像を上、パネルを下に重ね、画像の欄は画像の縦横比に合わせて余白を作らない。
+    // 横長で十分な幅があるときだけパネルを右に並べる
+    <div className="flex h-dvh flex-col bg-neutral-950 text-neutral-200 md:landscape:flex-row">
       <main
-        className={`relative flex min-h-0 flex-1 items-center justify-center p-4 ${dragging ? 'bg-neutral-900' : ''}`}
+        style={image ? ({ '--stack-height': stackHeight(image) } as CSSProperties) : undefined}
+        className={`relative flex min-h-0 items-center justify-center p-4 pb-8 md:landscape:h-auto md:landscape:flex-1 ${image ? 'h-(--stack-height) shrink-0' : 'flex-1'} ${dragging ? 'bg-neutral-900' : ''}`}
         onDragOver={(e) => {
           e.preventDefault()
           setDragging(true)
@@ -171,11 +182,14 @@ export default function App() {
         <canvas ref={canvasRef} className={`max-h-full max-w-full object-contain ${image ? '' : 'hidden'}`} />
         {!image && (
           <div className="flex flex-col items-center gap-4 text-center">
-            <p className="text-sm text-neutral-400">Drop, paste, or open an image</p>
+            <p className="text-sm text-neutral-400">
+              <span className="pointer-coarse:hidden">Drop, paste, or open an image</span>
+              <span className="hidden pointer-coarse:inline">Choose an image to start</span>
+            </p>
             <button
               type="button"
               onClick={openImage}
-              className="rounded-md border border-neutral-700 px-4 py-2 text-sm hover:bg-neutral-800"
+              className="rounded-md border border-neutral-700 px-4 py-2 text-sm hover:bg-neutral-800 pointer-coarse:px-6 pointer-coarse:py-3"
             >
               Open image
             </button>
@@ -184,11 +198,12 @@ export default function App() {
         )}
         {image && (
           <p className="absolute bottom-2 left-4 font-mono text-xs text-neutral-500">
+            {originalSize && `${originalSize.width}x${originalSize.height} -> `}
             {image.width}x{image.height} / {regions.length} blobs
           </p>
         )}
       </main>
-      <aside className="max-h-[45dvh] w-full shrink-0 overflow-y-auto border-t border-neutral-800 md:max-h-none md:w-80 md:border-t-0 md:border-l">
+      <aside className="min-h-0 flex-1 overflow-y-auto border-t border-neutral-800 md:landscape:w-80 md:landscape:flex-none md:landscape:border-t-0 md:landscape:border-l">
         <ControlPane
           initial={initialSettings}
           onChange={handleSettingsChange}

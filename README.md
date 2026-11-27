@@ -117,6 +117,7 @@ This project is built with the following technologies and open-source libraries.
 │       ├── settings.ts    # Settings type, defaults, loading saved JSON
 │       ├── presets.ts     # Built-in presets
 │       ├── exportSettings.ts # Export format, quality, scale
+│       ├── image.ts       # Image loading, shrinking images too large for the device
 │       ├── detect/        # detector.ts (main thread), detect.worker.ts, threshold.ts, quadtree.ts, common.ts
 │       └── render/        # render.ts (layers), connections.ts (line pairs), label.ts (label templates)
 ├── docs/                  # Design docs (requirements, architecture, settings)

@@ -31,7 +31,7 @@ blobframe: a browser tool that detects regions (blobs) in an image and draws box
 ## After every change
 
 - Run `npm run lint` and `npm run typecheck`; the git `pre-commit` hook runs both.
-- For UI changes, check both PC and smartphone layouts. On smartphones the settings panel sits below the canvas.
+- For UI changes, check PC, smartphone (portrait and landscape), and tablet layouts, with touch emulation on for touch devices. The layout rules are in `docs/architecture.md` (Layout).
 - When changing detection or drawing, check the result with a real image, not only the type check.
 - When adding, renaming, or removing a settings key, follow `docs/settings.md`; saved settings and preset files depend on the key names.
 
@@ -40,6 +40,7 @@ blobframe: a browser tool that detects regions (blobs) in an image and draws box
 - `src/App.tsx`: image loading (file, drop, paste), detection and render scheduling, export.
 - `src/components/ControlPane.tsx`: the Tweakpane panel. It owns its own copy of the settings and reports changes through `onChange`.
 - `src/components/pane/`: Tweakpane customizations. `dropdownPlugin.ts` replaces every list (`options`) with an own dropdown; `folderIcons.ts` and `pane.css` restyle the folder marks. Icons come from `lucide`.
+- `src/lib/image.ts`: image loading; shrinks images larger than the device can draw on a canvas (iOS Safari).
 - `src/lib/fonts.ts`: reads the app font (`--font-mono` in `src/index.css`, Roboto Mono) for canvas labels and waits for it to load.
 - `src/lib/settings.ts`: `Settings` type, defaults, and `mergeSettings` for saved JSON. `src/lib/presets.ts`: built-in presets. `src/lib/exportSettings.ts`: export format, quality, and scale, stored apart from `Settings`.
 - `src/lib/detect/`: detection. `detector.ts` (main thread side) downscales the image and talks to `detect.worker.ts`; methods (`threshold.ts`, `quadtree.ts`) are pure functions; helpers shared by methods are in `common.ts`.
