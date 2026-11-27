@@ -25,9 +25,12 @@
 **[blobframe.vercel.app](https://blobframe.vercel.app)**
 
 ## 機能
-画像を開くと、明るい(または暗い)領域を見つけて四角で囲みます。見た目はすべて設定パネルから変えられ、スライダーを動かすとその場で描き直されます。
+画像を開くと、領域を見つけて四角で囲みます。見た目はすべて設定パネルから変えられ、スライダーを動かすとその場で描き直されます。
 
-- **検出**: 輝度のしきい値を複数段階で使うので、大小の四角が混ざります。四角の最小・最大サイズ、最大個数、ぼかし、余白を調整できます。
+- **検出**: 2つの方式から選べます。
+  - しきい値: 明るい(または暗い)領域を複数段階の輝度で探すので、大小の四角が混ざります。
+  - Quadtree: 細かい部分ほど画像を小さく分割するので、輪郭や模様の周りに四角が集まります。
+  - どちらも四角の最小・最大サイズ、最大個数、ぼかし、余白を調整できます。
 - **四角**: 実線、破線、角だけの枠線と、全面またはメッシュの塗り。
 - **四角の中**: 色反転、モノクロ、ズーム。四角の外は暗くしたりモノクロにしたりできます。
 - **接続線**: 四角を近い順に1本につなぐか、近いもの同士をつなぎます。直線か曲線、実線か破線を選べます。
@@ -96,7 +99,7 @@ git config core.hooksPath .githooks
 - **設定パネル**: [Tweakpane](https://tweakpane.github.io/docs/)
 - **アイコン**: [Lucide](https://lucide.dev/)(ISC ライセンス)
 - **フォント**: [Roboto Mono](https://fonts.google.com/specimen/Roboto+Mono)([Fontsource](https://fontsource.org/) 経由、SIL OFL 1.1)
-- **検出**: Web Worker 上の独自実装(しきい値、連結成分ラベリング)
+- **検出**: Web Worker 上の独自実装(しきい値と連結成分ラベリング、積分画像による Quadtree)
 - **描画**: Canvas 2D
 - **ホスティング**: [Vercel](https://vercel.com/)
 
@@ -110,7 +113,7 @@ git config core.hooksPath .githooks
 │   │   └── pane/          # Tweakpane のカスタマイズ(自前のドロップダウン、フォルダのアイコン、CSS)
 │   └── lib/
 │       ├── settings.ts    # 設定の型、既定値、保存済み JSON の読み込み
-│       ├── detect/        # detector.ts(メインスレッド側)、detect.worker.ts、threshold.ts
+│       ├── detect/        # detector.ts(メインスレッド側)、detect.worker.ts、threshold.ts、quadtree.ts、common.ts
 │       └── render/        # render.ts(レイヤー描画)、connections.ts(線の組み合わせ)、label.ts(ラベルのテンプレート)
 ├── docs/                  # 設計ドキュメント(requirements、architecture、settings)
 ├── .githooks/             # pre-commit、commit-msg

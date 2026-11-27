@@ -1,44 +1,6 @@
 import type { DetectSettings } from '../settings'
 import type { BlobRegion } from '../types'
-
-export type GrayImage = { data: Uint8ClampedArray; width: number; height: number }
-
-export function toGray(rgba: Uint8ClampedArray, width: number, height: number): GrayImage {
-  const data = new Uint8ClampedArray(width * height)
-  for (let i = 0, p = 0; p < data.length; i += 4, p++) {
-    // Rec.709 の輝度係数
-    data[p] = 0.2126 * rgba[i]! + 0.7152 * rgba[i + 1]! + 0.0722 * rgba[i + 2]!
-  }
-  return { data, width, height }
-}
-
-// 横と縦の移動平均を分けて行い、半径に関係なく O(画素数) で済ませる
-function boxBlur(img: GrayImage, radius: number): GrayImage {
-  const r = Math.round(radius)
-  if (r <= 0) return img
-  const { width: w, height: h } = img
-  const tmp = new Float32Array(w * h)
-  const out = new Uint8ClampedArray(w * h)
-  const size = r * 2 + 1
-  for (let y = 0; y < h; y++) {
-    const row = y * w
-    let sum = 0
-    for (let x = -r; x <= r; x++) sum += img.data[row + clamp(x, 0, w - 1)]!
-    for (let x = 0; x < w; x++) {
-      tmp[row + x] = sum / size
-      sum += img.data[row + clamp(x + r + 1, 0, w - 1)]! - img.data[row + clamp(x - r, 0, w - 1)]!
-    }
-  }
-  for (let x = 0; x < w; x++) {
-    let sum = 0
-    for (let y = -r; y <= r; y++) sum += tmp[clamp(y, 0, h - 1) * w + x]!
-    for (let y = 0; y < h; y++) {
-      out[y * w + x] = sum / size
-      sum += tmp[clamp(y + r + 1, 0, h - 1) * w + x]! - tmp[clamp(y - r, 0, h - 1) * w + x]!
-    }
-  }
-  return { data: out, width: w, height: h }
-}
+import { boxBlur, toRegion, type GrayImage, type SourceFrame } from './common'
 
 type Component = { minX: number; minY: number; maxX: number; maxY: number; count: number; lumSum: number }
 
@@ -109,17 +71,8 @@ function sameCenter(a: BlobRegion, b: BlobRegion): boolean {
   return Math.abs(a.cx - b.cx) < limit && Math.abs(a.cy - b.cy) < limit
 }
 
-/**
- * 縮小済みのグレー画像から領域を検出し、元画像の座標で返す。
- * scale は 元画像の幅 / 処理画像の幅。
- */
-export function detectThreshold(
-  gray: GrayImage,
-  scale: number,
-  srcWidth: number,
-  srcHeight: number,
-  s: DetectSettings,
-): BlobRegion[] {
+/** 縮小済みのグレー画像から明るさのしきい値で領域を検出し、面積の大きい順に返す。 */
+export function detectThreshold(gray: GrayImage, src: SourceFrame, s: DetectSettings): BlobRegion[] {
   const img = boxBlur(gray, s.blur)
   const levels = Math.max(1, Math.round(s.levels))
   const mask = new Uint8Array(img.width * img.height)
@@ -132,24 +85,8 @@ export function detectThreshold(
       mask[i] = s.target === 'bright' ? (v >= t ? 1 : 0) : v <= t ? 1 : 0
     }
     for (const c of connectedComponents(img, mask)) {
-      const x0 = clamp(c.minX * scale - s.padding, 0, srcWidth)
-      const y0 = clamp(c.minY * scale - s.padding, 0, srcHeight)
-      const x1 = clamp((c.maxX + 1) * scale + s.padding, 0, srcWidth)
-      const y1 = clamp((c.maxY + 1) * scale + s.padding, 0, srcHeight)
-      const w = x1 - x0
-      const h = y1 - y0
-      if (w < s.minSize || h < s.minSize || w > s.maxSize || h > s.maxSize) continue
-      candidates.push({
-        id: 0,
-        x: x0,
-        y: y0,
-        w,
-        h,
-        cx: x0 + w / 2,
-        cy: y0 + h / 2,
-        area: c.count * scale * scale,
-        luminance: c.lumSum / c.count,
-      })
+      const region = toRegion(c.minX, c.minY, c.maxX + 1, c.maxY + 1, c.count, c.lumSum / c.count, src, s)
+      if (region) candidates.push(region)
     }
   }
 
@@ -164,7 +101,4 @@ export function detectThreshold(
   picked.forEach((r, i) => (r.id = i + 1))
   return picked
 }
-
-function clamp(v: number, min: number, max: number): number {
-  return v < min ? min : v > max ? max : v
-}
+

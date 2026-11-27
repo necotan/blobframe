@@ -22,7 +22,7 @@ Possible later additions: OpenCV.js loaded on demand for heavy methods (about 10
 ```
 image (ImageBitmap)
   -> detector.ts: downscale to processSize on the main thread
-  -> detect.worker.ts: grayscale -> blur -> method (threshold.ts) -> filter and merge
+  -> detect.worker.ts: grayscale -> blur -> method (threshold.ts or quadtree.ts) -> size filter, max count
   -> BlobRegion[] in source pixels
   -> render.ts: draw layers onto a canvas the size of the source
   -> PNG export from that canvas
@@ -62,7 +62,7 @@ image (ImageBitmap)
 ## Adding a detection method
 
 1. Add the slug to `DetectSettings['method']` and its parameters to `DetectSettings` with defaults (`docs/settings.md`).
-2. Write the method as a pure function in `src/lib/detect/<method>.ts` that takes the downscaled grayscale (or RGBA) image and returns `BlobRegion[]` in source pixels. Reuse the size filter and merge step from `threshold.ts`; move them to a shared file when the second method needs them.
+2. Write the method as a pure function in `src/lib/detect/<method>.ts` that takes the downscaled grayscale (or RGBA) image and returns `BlobRegion[]` in source pixels. Use `toRegion` in `common.ts` to convert a rectangle to source pixels, add padding, and apply the size filter, so `minSize`, `maxSize`, and `padding` mean the same in every method. Return regions sorted by area, largest first: the `chain` line rule starts from the first region.
 3. Dispatch on `settings.method` in `detect.worker.ts`.
 4. Add the bindings in the Detect folder of `ControlPane.tsx` and hide the parameters of other methods in `syncVisibility`.
 

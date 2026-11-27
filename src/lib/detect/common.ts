@@ -1,0 +1,82 @@
+import type { DetectSettings } from '../settings'
+import type { BlobRegion } from '../types'
+
+export type GrayImage = { data: Uint8ClampedArray; width: number; height: number }
+
+export function toGray(rgba: Uint8ClampedArray, width: number, height: number): GrayImage {
+  const data = new Uint8ClampedArray(width * height)
+  for (let i = 0, p = 0; p < data.length; i += 4, p++) {
+    // Rec.709 の輝度係数
+    data[p] = 0.2126 * rgba[i]! + 0.7152 * rgba[i + 1]! + 0.0722 * rgba[i + 2]!
+  }
+  return { data, width, height }
+}
+
+// 横と縦の移動平均を分けて行い、半径に関係なく O(画素数) で済ませる
+export function boxBlur(img: GrayImage, radius: number): GrayImage {
+  const r = Math.round(radius)
+  if (r <= 0) return img
+  const { width: w, height: h } = img
+  const tmp = new Float32Array(w * h)
+  const out = new Uint8ClampedArray(w * h)
+  const size = r * 2 + 1
+  for (let y = 0; y < h; y++) {
+    const row = y * w
+    let sum = 0
+    for (let x = -r; x <= r; x++) sum += img.data[row + clamp(x, 0, w - 1)]!
+    for (let x = 0; x < w; x++) {
+      tmp[row + x] = sum / size
+      sum += img.data[row + clamp(x + r + 1, 0, w - 1)]! - img.data[row + clamp(x - r, 0, w - 1)]!
+    }
+  }
+  for (let x = 0; x < w; x++) {
+    let sum = 0
+    for (let y = -r; y <= r; y++) sum += tmp[clamp(y, 0, h - 1) * w + x]!
+    for (let y = 0; y < h; y++) {
+      out[y * w + x] = sum / size
+      sum += tmp[clamp(y + r + 1, 0, h - 1) * w + x]! - tmp[clamp(y - r, 0, h - 1) * w + x]!
+    }
+  }
+  return { data: out, width: w, height: h }
+}
+
+/** 処理画像のピクセルを元画像のピクセルに直すための値。scale は 元画像の幅 / 処理画像の幅 */
+export type SourceFrame = { scale: number; width: number; height: number }
+
+/**
+ * 処理画像上の矩形(x1, y1 は含まない)を元画像の座標に直し、padding を足して BlobRegion にする。
+ * minSize / maxSize に収まらなければ null。id は 0 のままなので、並びを決めた後に振ること。
+ */
+export function toRegion(
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  pixelCount: number,
+  luminance: number,
+  src: SourceFrame,
+  s: DetectSettings,
+): BlobRegion | null {
+  const left = clamp(x0 * src.scale - s.padding, 0, src.width)
+  const top = clamp(y0 * src.scale - s.padding, 0, src.height)
+  const right = clamp(x1 * src.scale + s.padding, 0, src.width)
+  const bottom = clamp(y1 * src.scale + s.padding, 0, src.height)
+  const w = right - left
+  const h = bottom - top
+  if (w < s.minSize || h < s.minSize || w > s.maxSize || h > s.maxSize) return null
+  return {
+    id: 0,
+    x: left,
+    y: top,
+    w,
+    h,
+    cx: left + w / 2,
+    cy: top + h / 2,
+    area: pixelCount * src.scale * src.scale,
+    luminance,
+  }
+}
+
+export function clamp(v: number, min: number, max: number): number {
+  return v < min ? min : v > max ? max : v
+}

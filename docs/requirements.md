@@ -8,8 +8,10 @@ What blobframe does and what is planned. How the code is organized is in `docs/a
 |---|---|---|
 | Region | `BlobRegion` | One detected area: bounding box, center, pixel count, mean luminance. Named `BlobRegion` because `Blob` is a DOM type. |
 | Detection | `lib/detect/` | Turning an image into `BlobRegion[]`. |
-| Detection method | `DetectSettings.method` | The algorithm used for detection (currently `threshold` only). |
+| Detection method | `DetectSettings.method` | The algorithm used for detection: `threshold` or `quadtree`. |
 | Level | `DetectSettings.levels` | One threshold step. Several levels give nested boxes of different sizes. |
+| Depth | `DetectSettings.quadDepth`, `quadMinDepth` | How many times a quadtree cell was split. Each split halves the side. |
+| Detail | `DetectSettings.quadDetail` | Standard deviation of brightness inside a quadtree cell. |
 | Style | every `Settings` group except `detect` | How regions are drawn. Changing it does not re-run detection. |
 | Preset | JSON file of `Settings` | Saved and loaded from the File folder of the panel. |
 | Size unit | `u` in `render.ts` | 1/1000 of the image's long side. Style sizes are in this unit. |
@@ -27,9 +29,14 @@ What blobframe does and what is planned. How the code is organized is in `docs/a
 
 ## Current features
 
-- Detection: brightness threshold with connected-component labeling.
-  - Parameters: target (bright or dark), threshold range, levels, blur, processing resolution, min and max box size, max count, padding.
+- Detection, threshold: brightness threshold with connected-component labeling.
+  - Parameters: target (bright or dark), threshold range, levels.
   - Boxes that overlap heavily or share almost the same center are merged, so levels do not stack identical labels.
+- Detection, quadtree: split cells into four while their detail is above a limit.
+  - Parameters: detail, min depth, max depth.
+  - Only cells with at least half the detail limit become boxes, so flat areas stay empty. Cells larger than min depth are skipped.
+  - `minSize` also stops splitting, so detailed areas are not lost as boxes too small to keep.
+- Shared detection parameters: blur, processing resolution, min and max box size, max count, padding.
 - Background: dim, monochrome.
 - In-box effects: invert, monochrome, zoom.
 - Fill: none, solid, mesh (spacing and line width).
@@ -45,7 +52,7 @@ What blobframe does and what is planned. How the code is organized is in `docs/a
 
 ### Phase 2: more methods and styles
 
-- Detection methods: adaptive threshold, color range (HSV), edges and contours (Sobel, Canny), scale-space blobs (LoG, DoG), feature-point clusters (FAST), quadtree split by detail, seeded random weighted by brightness.
+- Detection methods: adaptive threshold, color range (HSV), edges and contours (Sobel, Canny), scale-space blobs (LoG, DoG), feature-point clusters (FAST), seeded random weighted by brightness.
 - Detection options: aspect ratio limit, sort order (area, brightness, position).
 - In-box effects: threshold, mosaic, blur, tint, edge, posterize, thermal color map, RGB shift; stacking several; a random effect per box.
 - Fill: hatching, dots, scanlines; blend mode.

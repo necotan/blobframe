@@ -1,10 +1,16 @@
 export type DetectSettings = {
-  method: 'threshold'
+  method: 'threshold' | 'quadtree'
   target: 'bright' | 'dark'
   thresholdMin: number
   thresholdMax: number
   /** thresholdMin から thresholdMax までを何段階で切るか。段階ごとの領域を合わせると大小の箱が入れ子になる */
   levels: number
+  /** quadtree: セル内の明るさの標準偏差(0-255)がこれを超えると4分割する。小さいほど細かく分かれる */
+  quadDetail: number
+  /** quadtree: 分割の最大回数 */
+  quadDepth: number
+  /** quadtree: これより分割回数の少ない(大きい)セルは箱にしない。1回分割すると辺の長さは画像の 1/2 */
+  quadMinDepth: number
   blur: number
   /** 検出時の長辺ピクセル数。元画像はこのサイズに縮小して処理する */
   processSize: number
@@ -74,6 +80,9 @@ export const DEFAULT_SETTINGS: Settings = {
     thresholdMin: 90,
     thresholdMax: 200,
     levels: 4,
+    quadDetail: 20,
+    quadDepth: 6,
+    quadMinDepth: 2,
     blur: 2,
     processSize: 480,
     minSize: 20,

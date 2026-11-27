@@ -40,14 +40,17 @@ Both are plain `JSON.stringify(settings)` with no version field.
 
 | Key | Type | Meaning |
 |---|---|---|
-| `method` | `threshold` | Detection method. |
-| `target` | `bright` / `dark` | Which side of the threshold forms regions. |
-| `thresholdMin`, `thresholdMax` | 0-255 | Threshold range split into `levels` steps. |
-| `levels` | 1-8 | Number of threshold steps. 1 uses `thresholdMin` only. |
-| `blur` | px of the processed image | Box blur radius before thresholding. |
+| `method` | `threshold` / `quadtree` | Detection method. An unknown value is treated as `threshold`. |
+| `target` | `bright` / `dark` | threshold: which side of the threshold forms regions. |
+| `thresholdMin`, `thresholdMax` | 0-255 | threshold: range split into `levels` steps. |
+| `levels` | 1-8 | threshold: number of steps. 1 uses `thresholdMin` only. |
+| `quadDetail` | 0-255 | quadtree: a cell is split while the standard deviation of its brightness is above this. Cells below half of it are not boxed. |
+| `quadMinDepth` | count | quadtree: cells split fewer times than this are not boxed. 1 split = half the image side. |
+| `quadDepth` | count | quadtree: maximum number of splits. |
+| `blur` | px of the processed image | Box blur radius before detection. |
 | `processSize` | px | Long side of the downscaled copy used for detection. |
-| `minSize`, `maxSize` | source px | Both box width and height must be within this range. |
-| `maxCount` | count | Largest regions kept after merging. |
+| `minSize`, `maxSize` | source px | Both box width and height must be within this range. quadtree also stops splitting when a cell would get smaller than `minSize`. |
+| `maxCount` | count | Largest regions kept, after merging for threshold. |
 | `padding` | source px | Added on every side of each box. |
 
 ### background
