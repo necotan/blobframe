@@ -9,7 +9,7 @@ function preset(id: string, name: string, overrides: Overrides): Preset {
   return { id, name, settings: mergeSettings(DEFAULT_SETTINGS, overrides) }
 }
 
-const GREEN = DEFAULT_SETTINGS.stroke.color
+const GREEN = '#3dff3d'
 const WHITE = '#ffffff'
 const AMBER = '#ffc23d'
 const RED = '#ff3b3b'
@@ -33,7 +33,8 @@ export const PRESETS: Preset[] = [
   preset('quadtree-mesh', 'Quadtree Mesh', {
     detect: { method: 'quadtree', maxCount: 120, padding: 0 },
     background: { dim: 0.45, mono: true },
-    fill: { color: AMBER, opacity: 0.4 },
+    effect: { mono: true },
+    fill: { mode: 'mesh', color: AMBER, opacity: 0.4 },
     stroke: { color: AMBER, width: 1 },
     lines: { rule: 'none' },
     marker: { shape: 'none' },
@@ -59,6 +60,7 @@ export const PRESETS: Preset[] = [
   }),
   preset('blueprint', 'Blueprint', {
     background: { dim: 0.5, mono: true },
+    effect: { mono: true },
     fill: { mode: 'solid', color: CYAN, opacity: 0.1 },
     stroke: { style: 'dashed', color: CYAN, width: 1 },
     lines: { rule: 'chain', shape: 'curve', curvature: 0.4, dashed: false, color: CYAN, width: 1, opacity: 0.7 },
@@ -67,10 +69,11 @@ export const PRESETS: Preset[] = [
   }),
   preset('hacker', 'Hacker', {
     background: { dim: 0.6, mono: true },
-    fill: { meshSpacing: 2, opacity: 0.25 },
-    stroke: { width: 1 },
-    lines: { rule: 'chain', shape: 'straight', width: 0.5, opacity: 0.6 },
-    marker: { shape: 'dot', size: 4 },
+    effect: { mono: true },
+    fill: { mode: 'mesh', color: GREEN, meshSpacing: 2, opacity: 0.25 },
+    stroke: { color: GREEN, width: 1 },
+    lines: { rule: 'chain', shape: 'straight', dashed: true, color: GREEN, width: 0.5, opacity: 0.6 },
+    marker: { shape: 'dot', size: 4, color: GREEN },
     label: { template: '> PROC_{id:03} {x:03}:{y:03}', position: 'bottom-left', size: 10, color: GREEN, background: false },
   }),
   preset('esp', 'ESP', {
@@ -78,19 +81,20 @@ export const PRESETS: Preset[] = [
     background: { dim: 0 },
     effect: { mono: false },
     fill: { mode: 'none' },
-    lines: { rule: 'snapline', origin: 'bottom', shape: 'straight', dashed: false, opacity: 0.8 },
+    stroke: { color: GREEN, width: 1.5 },
+    lines: { rule: 'snapline', origin: 'bottom', shape: 'straight', dashed: false, color: GREEN, opacity: 0.8 },
     marker: { shape: 'none' },
-    label: { template: '[{id:02}] {w}x{h}', coordScale: 'pixel', size: 10 },
+    label: { template: '[{id:02}] {w}x{h}', coordScale: 'pixel', size: 10, backgroundColor: GREEN },
   }),
   preset('aimbot', 'Aimbot', {
     detect: { maxCount: 8 },
     background: { dim: 0.3 },
     effect: { mono: false, zoom: 1.5 },
     fill: { mode: 'none' },
-    stroke: { style: 'corners', width: 2 },
-    lines: { rule: 'snapline', origin: 'center', shape: 'straight', opacity: 0.8 },
-    marker: { shape: 'circle', size: 16 },
-    label: { template: 'LOCK {id:02}', size: 10 },
+    stroke: { style: 'corners', color: GREEN, width: 2 },
+    lines: { rule: 'snapline', origin: 'center', shape: 'straight', dashed: true, color: GREEN, opacity: 0.8 },
+    marker: { shape: 'circle', size: 16, color: GREEN },
+    label: { template: 'LOCK {id:02}', size: 10, backgroundColor: GREEN },
   }),
 ]
 
