@@ -83,6 +83,10 @@ The selected built-in preset is not stored. The panel finds it by comparing the 
 | `invert` | boolean | Invert colors inside boxes. |
 | `mono` | boolean | Monochrome inside boxes. |
 | `zoom` | 1-4 | Magnification inside boxes, centered on the region. 1 means off. |
+| `blur` | u | Blur strength (size of the shrunk cells before smoothing back). 0 means off. |
+| `mosaic` | u | Mosaic cell size. 0 means off. Overrides `blur` when both are above 0. |
+| `tint` | 0-1 | Strength of `tintColor`. Keeps brightness, replaces hue and saturation. 0 means off. |
+| `tintColor` | `#rrggbb` | |
 
 ### fill
 

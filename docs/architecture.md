@@ -52,7 +52,7 @@ image (ImageBitmap; image.ts shrinks it if the device cannot draw it on a canvas
 
 1. Source image.
 2. Background: monochrome, then dim, over the whole image.
-3. In-box effects per region: restore the original pixels (or a zoomed copy) inside the box, then monochrome, then invert.
+3. In-box effects per region: redraw the source inside the box (zoomed, blurred, or as a mosaic when set), then monochrome, tint, invert.
 4. Fill.
 5. Lines.
 6. Stroke.
@@ -64,6 +64,8 @@ image (ImageBitmap; image.ts shrinks it if the device cannot draw it on a canvas
 - Monochrome: fill gray with `globalCompositeOperation = 'saturation'`.
 - Invert: fill white with `'difference'`.
 - Zoom: `drawImage` from a smaller source rectangle centered on the region.
+- Mosaic and blur: draw the region shrunk into a small scratch canvas, then stretch it back, without smoothing for mosaic and with smoothing for blur. Mosaic cells are aligned to one grid over the whole image so overlapping boxes match.
+- Tint: fill the color with `'color'`, which keeps the brightness underneath and replaces hue and saturation.
 - `ctx.filter` is avoided because browser support differs. Per-pixel `getImageData` loops are avoided in the renderer because they get slow on large images and with many boxes; if an effect truly needs pixel access (e.g. thermal map), do it on the region only, or move effects to WebGL.
 
 ## Adding a detection method
