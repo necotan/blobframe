@@ -33,9 +33,9 @@ Open an image, and blobframe finds regions and frames them. Every part of the lo
   - Min and max box size, max count, blur, and padding are adjustable for both.
 - **Boxes**: solid, dashed, or corner-only outlines; solid or mesh fill.
 - **Inside the boxes**: invert, monochrome, zoom. The area outside can be dimmed or made monochrome.
-- **Lines**: connect boxes in a chain or to their nearest neighbors, with straight or curved, solid or dashed lines.
+- **Lines**: connect boxes in a chain or to their nearest neighbors, or draw snaplines from the bottom, center, or top of the image to each box, with straight or curved, solid or dashed lines.
 - **Markers and labels**: a cross, dot, or circle at the center, and labels from a template such as `X{x:03}Y{y:03}` (-> `X075Y034`).
-- **Presets**: six built-in looks (Default, Tracker, Quadtree Mesh, Minimal, Invert, Blueprint) to start from. Your own settings can be saved and loaded as JSON files.
+- **Presets**: nine built-in looks (Default, Tracker, Quadtree Mesh, Minimal, Invert, Blueprint, Hacker, ESP, Aimbot) to start from. Your own settings can be saved and loaded as JSON files.
 - **Export**: PNG at the original resolution.
 
 All processing runs in your browser. Images are never uploaded.

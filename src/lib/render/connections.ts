@@ -1,14 +1,43 @@
 import type { Settings } from '../settings'
 import type { BlobRegion } from '../types'
 
+type Point = { x: number; y: number }
+
 /**
- * 線でつなぐ領域の組を返す。`chain` は regions[0] を起点にするので、検出結果の並び(面積の大きい順)のまま渡すこと。
+ * 描く線分の両端を返す。`chain` は regions[0] を起点にするので、検出結果の並び(面積の大きい順)のまま渡すこと。
  */
-export function connectionPairs(regions: BlobRegion[], s: Settings['lines']): [BlobRegion, BlobRegion][] {
+export function connectionSegments(
+  regions: BlobRegion[],
+  s: Settings['lines'],
+  imageWidth: number,
+  imageHeight: number,
+): [Point, Point][] {
+  if (s.rule === 'snapline') return snaplines(regions, s.origin, imageWidth, imageHeight)
+  return connectionPairs(regions, s).map(([a, b]) => [
+    { x: a.cx, y: a.cy },
+    { x: b.cx, y: b.cy },
+  ])
+}
+
+function connectionPairs(regions: BlobRegion[], s: Settings['lines']): [BlobRegion, BlobRegion][] {
   if (regions.length < 2) return []
   if (s.rule === 'chain') return chain(regions)
   if (s.rule === 'nearest') return nearest(regions, Math.max(1, Math.round(s.neighbors)))
   return []
+}
+
+// ゲームの ESP 表示のように、画面の端から各箱へ1本ずつ引く。下からなら箱の下辺(足元)に当てる
+function snaplines(
+  regions: BlobRegion[],
+  origin: Settings['lines']['origin'],
+  W: number,
+  H: number,
+): [Point, Point][] {
+  return regions.map((r) => {
+    if (origin === 'top') return [{ x: W / 2, y: 0 }, { x: r.cx, y: r.y }]
+    if (origin === 'center') return [{ x: W / 2, y: H / 2 }, { x: r.cx, y: r.cy }]
+    return [{ x: W / 2, y: H }, { x: r.cx, y: r.y + r.h }]
+  })
 }
 
 function chain(regions: BlobRegion[]): [BlobRegion, BlobRegion][] {

@@ -1,7 +1,7 @@
 import type { Settings } from '../settings'
 import type { BlobRegion } from '../types'
 import { monoFontFamily } from '../fonts'
-import { connectionPairs } from './connections'
+import { connectionSegments } from './connections'
 import { formatLabel } from './label'
 
 type Source = CanvasImageSource & { width: number; height: number }
@@ -28,7 +28,7 @@ export function render(ctx: CanvasRenderingContext2D, source: Source, regions: B
   const backgroundChanged = s.background.mono || s.background.dim > 0
   for (const r of regions) drawEffects(ctx, source, r, s, backgroundChanged)
   for (const r of regions) drawFill(ctx, r, s.fill, u)
-  drawConnections(ctx, regions, s.lines, u)
+  drawConnections(ctx, regions, s.lines, u, W, H)
   if (s.stroke.enabled) for (const r of regions) drawStroke(ctx, r, s.stroke, u)
   for (const r of regions) drawMarker(ctx, r, s.marker, u)
   if (s.label.enabled) {
@@ -113,26 +113,33 @@ function drawFill(ctx: CanvasRenderingContext2D, r: BlobRegion, s: Settings['fil
   ctx.restore()
 }
 
-function drawConnections(ctx: CanvasRenderingContext2D, regions: BlobRegion[], s: Settings['lines'], u: number) {
-  const pairs = connectionPairs(regions, s)
-  if (!pairs.length) return
+function drawConnections(
+  ctx: CanvasRenderingContext2D,
+  regions: BlobRegion[],
+  s: Settings['lines'],
+  u: number,
+  W: number,
+  H: number,
+) {
+  const segments = connectionSegments(regions, s, W, H)
+  if (!segments.length) return
   ctx.save()
   ctx.globalAlpha = s.opacity
   ctx.strokeStyle = s.color
   ctx.lineWidth = s.width * u
   ctx.setLineDash(s.dashed ? [4 * u, 4 * u] : [])
   ctx.beginPath()
-  for (const [a, b] of pairs) {
-    ctx.moveTo(a.cx, a.cy)
+  for (const [a, b] of segments) {
+    ctx.moveTo(a.x, a.y)
     if (s.shape === 'curve') {
       // 中点から線分に垂直な方向へずらした点を制御点にする。curvature は線分の長さに対する比率
-      const mx = (a.cx + b.cx) / 2
-      const my = (a.cy + b.cy) / 2
-      const dx = b.cx - a.cx
-      const dy = b.cy - a.cy
-      ctx.quadraticCurveTo(mx - dy * s.curvature, my + dx * s.curvature, b.cx, b.cy)
+      const mx = (a.x + b.x) / 2
+      const my = (a.y + b.y) / 2
+      const dx = b.x - a.x
+      const dy = b.y - a.y
+      ctx.quadraticCurveTo(mx - dy * s.curvature, my + dx * s.curvature, b.x, b.y)
     } else {
-      ctx.lineTo(b.cx, b.cy)
+      ctx.lineTo(b.x, b.y)
     }
   }
   ctx.stroke()

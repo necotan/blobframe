@@ -9,6 +9,7 @@ function preset(id: string, name: string, overrides: Overrides): Preset {
   return { id, name, settings: mergeSettings(DEFAULT_SETTINGS, overrides) }
 }
 
+const GREEN = DEFAULT_SETTINGS.stroke.color
 const WHITE = '#ffffff'
 const AMBER = '#ffc23d'
 const RED = '#ff3b3b'
@@ -63,6 +64,33 @@ export const PRESETS: Preset[] = [
     lines: { rule: 'chain', shape: 'curve', curvature: 0.4, dashed: false, color: CYAN, width: 1, opacity: 0.7 },
     marker: { shape: 'circle', size: 10, color: CYAN },
     label: { template: 'x={x} y={y}', coordScale: 'pixel', position: 'bottom-left', size: 11, color: CYAN, background: false },
+  }),
+  preset('hacker', 'Hacker', {
+    background: { dim: 0.6, mono: true },
+    fill: { meshSpacing: 2, opacity: 0.25 },
+    stroke: { width: 1 },
+    lines: { rule: 'chain', shape: 'straight', width: 0.5, opacity: 0.6 },
+    marker: { shape: 'dot', size: 4 },
+    label: { template: '> PROC_{id:03} {x:03}:{y:03}', position: 'bottom-left', size: 10, color: GREEN, background: false },
+  }),
+  preset('esp', 'ESP', {
+    detect: { maxCount: 15 },
+    background: { dim: 0 },
+    effect: { mono: false },
+    fill: { mode: 'none' },
+    lines: { rule: 'snapline', origin: 'bottom', shape: 'straight', dashed: false, opacity: 0.8 },
+    marker: { shape: 'none' },
+    label: { template: '[{id:02}] {w}x{h}', coordScale: 'pixel', size: 10 },
+  }),
+  preset('aimbot', 'Aimbot', {
+    detect: { maxCount: 8 },
+    background: { dim: 0.3 },
+    effect: { mono: false, zoom: 1.5 },
+    fill: { mode: 'none' },
+    stroke: { style: 'corners', width: 2 },
+    lines: { rule: 'snapline', origin: 'center', shape: 'straight', opacity: 0.8 },
+    marker: { shape: 'circle', size: 16 },
+    label: { template: 'LOCK {id:02}', size: 10 },
   }),
 ]
 
