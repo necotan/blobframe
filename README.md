@@ -32,10 +32,10 @@ Open an image, and blobframe finds regions and frames them. Every part of the lo
   - Quadtree: the image is split into smaller cells where it has more detail, so boxes gather around edges and texture.
   - Min and max box size, max count, blur, and padding are adjustable for both.
 - **Boxes**: solid, dashed, or corner-only outlines; solid or mesh fill.
-- **Inside the boxes**: invert, monochrome, zoom. The area outside can be dimmed or made monochrome.
+- **Inside the boxes**: zoom, blur, mosaic, monochrome, tint, invert, combined freely. The area outside can be dimmed or made monochrome.
 - **Lines**: connect boxes in a chain or to their nearest neighbors, or draw snaplines from the bottom, center, or top of the image to each box, with straight or curved, solid or dashed lines.
 - **Markers and labels**: a cross, dot, or circle at the center, and labels from a template such as `X{x:03}Y{y:03}` (-> `X075Y034`).
-- **Presets**: nine built-in looks (Default, Tracker, Quadtree Mesh, Minimal, Invert, Blueprint, Hacker, ESP, Aimbot) to start from. Your own settings can be saved and loaded as JSON files.
+- **Presets**: twelve built-in looks (Default, Tracker, Quadtree Mesh, Minimal, Invert, Blueprint, Hacker, ESP, Aimbot, Censor, Heat, Frosted) to start from. Your own settings can be saved and loaded as JSON files.
 - **Export**: JPEG, PNG, or WebP, with quality and scale (10-100% of the original resolution).
 
 All processing runs in your browser. Images are never uploaded.

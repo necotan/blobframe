@@ -133,10 +133,15 @@ export function ControlPane(props: Props) {
     bg.addBinding(params.background, 'dim', { min: 0, max: 1, step: 0.05 })
     bg.addBinding(params.background, 'mono')
 
+    // 描く順(ズーム、ぼかしかモザイク、モノクロ、色付け、反転)に並べる
     const fx = pane.addFolder({ title: 'Box effect' })
-    fx.addBinding(params.effect, 'invert')
-    fx.addBinding(params.effect, 'mono')
     fx.addBinding(params.effect, 'zoom', { min: 1, max: 4, step: 0.1 })
+    fx.addBinding(params.effect, 'blur', { min: 0, max: 30, step: 0.5 })
+    fx.addBinding(params.effect, 'mosaic', { min: 0, max: 60, step: 1 })
+    fx.addBinding(params.effect, 'mono')
+    fx.addBinding(params.effect, 'tint', { min: 0, max: 1, step: 0.05 })
+    const tintColor = fx.addBinding(params.effect, 'tintColor', { label: 'tint color' })
+    fx.addBinding(params.effect, 'invert')
 
     const fill = pane.addFolder({ title: 'Fill' })
     fill.addBinding(params.fill, 'mode', { options: { None: 'none', Solid: 'solid', Mesh: 'mesh' } })
@@ -188,6 +193,7 @@ export function ControlPane(props: Props) {
       // 未知の method は Worker が threshold として扱うので、それに合わせる
       for (const b of thresholdBindings) b.hidden = params.detect.method === 'quadtree'
       for (const b of quadtreeBindings) b.hidden = params.detect.method !== 'quadtree'
+      tintColor.hidden = params.effect.tint <= 0
       meshSpacing.hidden = params.fill.mode !== 'mesh'
       meshWidth.hidden = params.fill.mode !== 'mesh'
       neighbors.hidden = params.lines.rule !== 'nearest'

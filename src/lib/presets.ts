@@ -14,6 +14,8 @@ const WHITE = '#ffffff'
 const AMBER = '#ffc23d'
 const RED = '#ff3b3b'
 const CYAN = '#3dd8ff'
+const ORANGE = '#ff5a1f'
+const BLACK = '#000000'
 
 /**
  * 標準プリセット。適用すると検出も含めて設定全体を置き換える。
@@ -95,6 +97,32 @@ export const PRESETS: Preset[] = [
     lines: { rule: 'snapline', origin: 'center', shape: 'straight', dashed: true, color: GREEN, opacity: 0.8 },
     marker: { shape: 'circle', size: 16, color: GREEN },
     label: { template: 'LOCK {id:02}', size: 10, backgroundColor: GREEN },
+  }),
+  preset('censor', 'Censor', {
+    detect: { maxCount: 12 },
+    background: { dim: 0 },
+    effect: { mosaic: 14 },
+    stroke: { color: WHITE, width: 1 },
+    lines: { rule: 'none' },
+    marker: { shape: 'none' },
+    label: { template: 'CENSORED', size: 9, color: WHITE, backgroundColor: BLACK },
+  }),
+  preset('heat', 'Heat', {
+    background: { dim: 0.5, mono: true },
+    effect: { tint: 0.8, tintColor: ORANGE },
+    stroke: { color: ORANGE, width: 1 },
+    lines: { rule: 'nearest', color: ORANGE, opacity: 0.5 },
+    marker: { shape: 'cross', color: ORANGE },
+    label: { template: 'T{lum:03}', size: 10, color: BLACK, backgroundColor: ORANGE },
+  }),
+  preset('frosted', 'Frosted', {
+    background: { dim: 0 },
+    effect: { blur: 6 },
+    fill: { mode: 'solid', color: WHITE, opacity: 0.15 },
+    stroke: { color: WHITE, width: 1 },
+    lines: { rule: 'none' },
+    marker: { shape: 'none' },
+    label: { enabled: false },
   }),
 ]
 

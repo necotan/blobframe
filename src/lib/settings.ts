@@ -30,6 +30,13 @@ export type Settings = {
     invert: boolean
     mono: boolean
     zoom: number
+    /** ぼかしの強さ(u)。0 でオフ */
+    blur: number
+    /** モザイクの1マスの大きさ(u)。0 でオフ。blur と両方あるときはモザイクになる */
+    mosaic: number
+    /** tintColor で色を付ける強さ 0-1。明るさは残して色味だけ置き換える。0 でオフ */
+    tint: number
+    tintColor: string
   }
   fill: {
     mode: 'none' | 'solid' | 'mesh'
@@ -100,6 +107,10 @@ export const DEFAULT_SETTINGS: Settings = {
     invert: false,
     mono: false,
     zoom: 1,
+    blur: 0,
+    mosaic: 0,
+    tint: 0,
+    tintColor: '#ff3b3b',
   },
   fill: {
     mode: 'none',

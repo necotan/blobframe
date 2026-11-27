@@ -26,7 +26,7 @@ export function render(ctx: CanvasRenderingContext2D, source: Source, regions: B
   }
 
   const backgroundChanged = s.background.mono || s.background.dim > 0
-  for (const r of regions) drawEffects(ctx, source, r, s, backgroundChanged)
+  for (const r of regions) drawEffects(ctx, source, r, s, u, backgroundChanged)
   for (const r of regions) drawFill(ctx, r, s.fill, u)
   drawConnections(ctx, regions, s.lines, u, W, H)
   if (s.stroke.enabled) for (const r of regions) drawStroke(ctx, r, s.stroke, u)
@@ -54,6 +54,16 @@ function desaturate(ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
   ctx.restore()
 }
 
+// 'color' は下地の明るさを残して色相と彩度だけを塗った色にするので、写真の陰影を保ったまま色が付く
+function colorize(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, color: string, amount: number) {
+  ctx.save()
+  ctx.globalCompositeOperation = 'color'
+  ctx.globalAlpha = amount
+  ctx.fillStyle = color
+  ctx.fillRect(x, y, w, h)
+  ctx.restore()
+}
+
 // 白と 'difference' で合成すると 255 - 下地 になり、色反転と同じ結果になる
 function invert(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
   ctx.save()
@@ -63,26 +73,51 @@ function invert(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, 
   ctx.restore()
 }
 
+// モザイクとぼかしで縮小した画像を置く作業用の canvas。箱ごとに要素を作らないよう使い回す
+let scratch: HTMLCanvasElement | null = null
+
 function drawEffects(
   ctx: CanvasRenderingContext2D,
   source: Source,
   r: BlobRegion,
   s: Settings,
+  u: number,
   backgroundChanged: boolean,
 ) {
-  const { zoom, mono, invert: inv } = s.effect
-  if (!backgroundChanged && zoom <= 1 && !mono && !inv) return
+  const { zoom, mono, invert: inv, blur, mosaic, tint, tintColor } = s.effect
+  const cell = (mosaic > 0 ? mosaic : blur) * u
+  if (!backgroundChanged && zoom <= 1 && cell <= 0 && !mono && tint <= 0 && !inv) return
   ctx.save()
   clipRect(ctx, r)
-  if (zoom > 1) {
-    const sw = r.w / zoom
-    const sh = r.h / zoom
-    ctx.drawImage(source, r.cx - sw / 2, r.cy - sh / 2, sw, sh, r.x, r.y, r.w, r.h)
-  } else if (backgroundChanged) {
-    // 背景を暗く/モノクロにした分を、箱の中だけ元画像に戻す
-    ctx.drawImage(source, r.x, r.y, r.w, r.h, r.x, r.y, r.w, r.h)
+  // 背景を暗く/モノクロにした分も、箱の中は元画像から描き直す
+  const z = Math.max(1, zoom)
+  const sw = r.w / z
+  const sh = r.h / z
+  const sx = r.cx - sw / 2
+  const sy = r.cy - sh / 2
+  if (cell > 0) {
+    // 画素を1つずつ処理せず、縮めてから引き伸ばす。補間なしで引き伸ばすとモザイク、補間ありだとぼかしになる。
+    // マス目は画像全体の格子にそろえ、重なった箱どうしでずれないようにする。はみ出した分は clip で切れる
+    const x0 = Math.floor(r.x / cell) * cell
+    const y0 = Math.floor(r.y / cell) * cell
+    const w = Math.max(1, Math.ceil((r.x + r.w - x0) / cell))
+    const h = Math.max(1, Math.ceil((r.y + r.h - y0) / cell))
+    // 大きさを毎回合わせる。前の箱の画素が残ると、ぼかしの補間で端に混ざる
+    scratch ??= document.createElement('canvas')
+    scratch.width = w
+    scratch.height = h
+    const sctx = scratch.getContext('2d')!
+    sctx.imageSmoothingQuality = 'high'
+    // 格子にそろえて広げた範囲に対応する元画像の範囲。ズーム中は箱の中心を基準に 1/zoom に縮める
+    sctx.drawImage(source, sx + (x0 - r.x) / z, sy + (y0 - r.y) / z, (w * cell) / z, (h * cell) / z, 0, 0, w, h)
+    ctx.imageSmoothingEnabled = mosaic <= 0
+    ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(scratch, x0, y0, w * cell, h * cell)
+  } else if (zoom > 1 || backgroundChanged) {
+    ctx.drawImage(source, sx, sy, sw, sh, r.x, r.y, r.w, r.h)
   }
   if (mono) desaturate(ctx, r.x, r.y, r.w, r.h)
+  if (tint > 0) colorize(ctx, r.x, r.y, r.w, r.h, tintColor, tint)
   if (inv) invert(ctx, r.x, r.y, r.w, r.h)
   ctx.restore()
 }
