@@ -1,0 +1,124 @@
+/* Tweakpane は既定で幅固定のフローティング表示なので、サイドバーの幅に合わせる */
+.tp-rotv {
+  /* 既定は端末に入っている等幅フォントを順に探すので、端末ごとに表示が変わる */
+  --tp-base-font-family: var(--font-mono);
+  width: 100% !important;
+  border-radius: 0 !important;
+}
+
+/*
+ * フォルダの開閉マーク。Tweakpane の <style> は実行時に後から挿入され同じ詳細度だと負けるので、
+ * 子孫セレクタで詳細度を上げている。開いた状態の回転は Tweakpane 側の transform: none をそのまま使う
+ */
+.tp-fldv > .tp-fldv_b > .tp-fldv_m {
+  background: none;
+  border-radius: 0;
+  color: var(--cnt-fg);
+  height: 14px;
+  width: 14px;
+  right: calc(var(--cnt-hp) + (var(--cnt-usz) + 4px - 14px) / 2 - 2px);
+  opacity: 0.6;
+  transform: rotate(-90deg);
+}
+
+.tp-fldv_m svg {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.bf-dd_b {
+  align-items: center;
+  appearance: none;
+  background-color: var(--btn-bg);
+  border: 0;
+  border-radius: var(--bld-br);
+  color: var(--btn-fg);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-weight: bold;
+  gap: 4px;
+  height: var(--cnt-usz);
+  justify-content: space-between;
+  margin: 0;
+  outline: none;
+  padding: 0 2px 0 var(--bld-hp);
+  width: 100%;
+}
+
+.bf-dd_b:hover {
+  background-color: var(--btn-bg-h);
+}
+
+.bf-dd_b:focus-visible,
+.bf-dd_b[aria-expanded='true'] {
+  background-color: var(--btn-bg-f);
+}
+
+.bf-dd_b:active {
+  background-color: var(--btn-bg-a);
+}
+
+.bf-dd_b:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.bf-dd_t {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bf-dd_m {
+  flex-shrink: 0;
+  height: 14px;
+  transition: transform 0.15s ease-in-out;
+  width: 14px;
+}
+
+.bf-dd_b[aria-expanded='true'] .bf-dd_m {
+  transform: rotate(180deg);
+}
+
+.bf-dd_l {
+  background-color: var(--bs-bg);
+  border-radius: var(--bs-br);
+  box-shadow:
+    0 0 0 1px var(--cnt-bg-a),
+    0 6px 20px rgb(0 0 0 / 0.45);
+  color: var(--cnt-fg);
+  list-style: none;
+  margin: 0;
+  overflow-y: auto;
+  padding: 4px;
+  position: fixed;
+  z-index: 1000;
+}
+
+.bf-dd_o {
+  align-items: center;
+  border-radius: var(--bld-br);
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  height: var(--cnt-usz);
+  justify-content: space-between;
+  padding: 0 var(--bld-hp);
+  white-space: nowrap;
+}
+
+.bf-dd_o-active {
+  background-color: var(--cnt-bg-a);
+}
+
+.bf-dd_o[aria-selected='true'] {
+  font-weight: bold;
+}
+
+.bf-dd_c {
+  flex-shrink: 0;
+  height: 12px;
+  width: 12px;
+}

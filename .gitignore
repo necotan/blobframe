@@ -1,0 +1,15 @@
+node_modules
+dist
+*.local
+.DS_Store
+
+# documentation (only the design docs in docs/ are tracked)
+/docs/*
+!/docs/requirements.md
+!/docs/architecture.md
+!/docs/settings.md
+# Claude Code: 共有する設定とフックだけ追跡する
+/.claude/*
+!/.claude/settings.json
+!/.claude/hooks/
+/.claude/hooks/.verified

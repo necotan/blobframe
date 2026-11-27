@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/roboto-mono';
+
+/* --font-mono がアプリ唯一のフォント。パネル(pane.css)とキャンバスのラベル(lib/fonts.ts)はこの変数を参照する */
+@theme {
+  --font-mono: 'Roboto Mono Variable', monospace;
+  --default-font-family: var(--font-mono);
+}
+
+:root {
+  color-scheme: dark;
+}
