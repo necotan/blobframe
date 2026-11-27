@@ -117,6 +117,7 @@ git config core.hooksPath .githooks
 │       ├── settings.ts    # 設定の型、既定値、保存済み JSON の読み込み
 │       ├── presets.ts     # 標準プリセット
 │       ├── exportSettings.ts # 書き出しの形式、品質、倍率
+│       ├── image.ts       # 画像の読み込み、端末で扱えない大きさの画像の縮小
 │       ├── detect/        # detector.ts(メインスレッド側)、detect.worker.ts、threshold.ts、quadtree.ts、common.ts
 │       └── render/        # render.ts(レイヤー描画)、connections.ts(線の組み合わせ)、label.ts(ラベルのテンプレート)
 ├── docs/                  # 設計ドキュメント(requirements、architecture、settings)

@@ -6,6 +6,37 @@
   border-radius: 0 !important;
 }
 
+/* Tweakpane の既定は1行 20px のマウス向けなので、指で操作する端末では行と文字を大きくする */
+@media (pointer: coarse) {
+  .tp-rotv {
+    --tp-container-unit-size: 32px;
+    --tp-container-unit-spacing: 6px;
+    /* 文字を大きくした分、数値の入力欄が狭くならないよう値の列を広げる。横向きのスマホの細いパネルではラベルの幅を残す */
+    --tp-blade-value-width: min(200px, 55%);
+  }
+
+  /* Tweakpane の .tp-rotv { font-size: 11px } は後から挿入されるので、詳細度を上げて勝たせる */
+  .tp-rotv.tp-rotv {
+    font-size: 13px;
+  }
+
+  /* iOS Safari は 16px 未満の入力欄にフォーカスすると画面を拡大し、拡大したままになる */
+  .tp-rotv .tp-txtv_i {
+    font-size: 16px;
+  }
+
+  /* つまみを大きくした分、端で隣の入力欄に重ならないよう溝の左右の余白も広げる */
+  .tp-rotv .tp-sldv_t {
+    margin: 0 9px;
+  }
+
+  .tp-sldv_t .tp-sldv_k::after {
+    height: 18px;
+    right: -9px;
+    width: 18px;
+  }
+}
+
 /*
  * フォルダの開閉マーク。Tweakpane の <style> は実行時に後から挿入され同じ詳細度だと負けるので、
  * 子孫セレクタで詳細度を上げている。開いた状態の回転は Tweakpane 側の transform: none をそのまま使う

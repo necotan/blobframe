@@ -48,6 +48,7 @@ What blobframe does and what is planned. How the code is organized is in `docs/a
 - Presets: nine built-in looks (Default, Tracker, Quadtree Mesh, Minimal, Invert, Blueprint, Hacker, ESP, Aimbot). Applying one replaces all settings, detection included. The list shows Custom when the settings match no preset.
 - Settings: saved automatically in the browser; saved and loaded as JSON files. Choosing the Default preset resets to defaults.
 - UI text is English.
+- Layout: works on PC, tablets, and smartphones in both orientations, with touch-sized controls on touch devices. Images too large for the device canvas (iOS Safari) are shrunk on load.
 
 ## Roadmap
 

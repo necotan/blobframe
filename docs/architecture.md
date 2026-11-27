@@ -20,7 +20,7 @@ Possible later additions: OpenCV.js loaded on demand for heavy methods (about 10
 ## Pipeline
 
 ```
-image (ImageBitmap)
+image (ImageBitmap; image.ts shrinks it if the device cannot draw it on a canvas)
   -> detector.ts: downscale to processSize on the main thread
   -> detect.worker.ts: grayscale -> blur -> method (threshold.ts or quadtree.ts) -> size filter, max count
   -> BlobRegion[] in source pixels
@@ -31,6 +31,13 @@ image (ImageBitmap)
 - `App.tsx` re-runs detection only when `settings.detect` changes (compared as a JSON string) or the image changes, after an 80 ms debounce. Every other change only redraws.
 - `detector.ts` gives each request an id and drops results that are not the latest, so a slow old result never overwrites a newer one.
 - `App.tsx` keeps the image a result belongs to and ignores results for a previous image.
+
+## Layout
+
+- The panel sits to the right of the image only when the window is at least Tailwind's `md` width and landscape (`md:landscape:`). Otherwise the image is on top and the panel below; a portrait tablet gets the full width for the image this way.
+- Stacked, the image area is sized to the image's aspect ratio (at most 60% of the screen height), so a wide photo leaves no empty band and the panel gets the rest.
+- On touch devices (`pointer: coarse`), `pane.css` raises Tweakpane's row height to 32 px and the font to 13 px. Text inputs use 16 px because iOS Safari zooms in on focus below that.
+- iOS Safari draws nothing on a canvas over its size limit, reported as 4096 x 4096 up to iOS 17 and 8192 x 8192 from iOS 18 (not documented by Apple). `loadImage` in `image.ts` checks images over 4096 x 4096 pixels by drawing one pixel at the far corner and reading it back; if it fails, the image is shrunk to 4096 x 4096 pixels and the status line shows the original size. Desktop browsers and iOS 18 with photos up to about 67 MP pass the check and keep the full size.
 
 ## Coordinate systems and units
 
@@ -85,7 +92,7 @@ Presets inherit every key they do not set from `DEFAULT_SETTINGS`, so changing a
 Tweakpane is used as is from npm. Its look is changed only from `src/components/pane/`:
 
 - `dropdownPlugin.ts`: an input binding plugin that replaces Tweakpane's `<select>`, whose opened list is drawn by the OS and cannot be styled. Plugins registered with `pane.registerPlugin` are tried before the built-in ones, so every string binding with `options` uses it; `ControlPane.tsx` keeps calling `addBinding(..., { options })`.
-  - The list is appended to the pane root (`.tp-rotv`) so it inherits Tweakpane's CSS variables, and uses `position: fixed` so the scrolling sidebar does not clip it. It opens upward when there is more room above.
+  - The list is appended to the pane root (`.tp-rotv`) so it inherits Tweakpane's CSS variables, and uses `position: fixed` so the scrolling panel does not clip it. It opens upward when there is more room above.
   - Focus stays on the button; the list is driven by `aria-activedescendant`. Keys: ArrowUp / ArrowDown / Enter / Space open; ArrowUp / ArrowDown / Home / End move; Enter / Space select; Escape and Tab close.
   - It closes on an outside pointer down, blur, window resize, and any scroll outside the list, because a fixed list would otherwise stay behind when the button moves.
 - `folderIcons.ts` and `pane.css`: replace the folder open/close mark (two CSS bars) with a Lucide chevron. Tweakpane injects its `<style>` at runtime after ours, so overrides need a more specific selector than Tweakpane's rule.
