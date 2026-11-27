@@ -1,4 +1,4 @@
-<h1 align="center">blobframe</h1>
+<h1 align="center">BlobFrame</h1>
 
 <p align="center">
   <a href="README.md">English</a> | 日本語
