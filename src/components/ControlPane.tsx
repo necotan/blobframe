@@ -61,10 +61,18 @@ export function ControlPane(props: Props) {
     file.addButton({ title: 'Reset' }).on('click', () => replaceAll(cloneSettings(DEFAULT_SETTINGS)))
 
     const d = pane.addFolder({ title: 'Detect' })
-    d.addBinding(params.detect, 'target', { options: { Bright: 'bright', Dark: 'dark' } })
-    d.addBinding(params.detect, 'thresholdMin', { label: 'threshold min', min: 0, max: 255, step: 1 })
-    d.addBinding(params.detect, 'thresholdMax', { label: 'threshold max', min: 0, max: 255, step: 1 })
-    d.addBinding(params.detect, 'levels', { min: 1, max: 8, step: 1 })
+    d.addBinding(params.detect, 'method', { options: { Threshold: 'threshold', Quadtree: 'quadtree' } })
+    const thresholdBindings = [
+      d.addBinding(params.detect, 'target', { options: { Bright: 'bright', Dark: 'dark' } }),
+      d.addBinding(params.detect, 'thresholdMin', { label: 'threshold min', min: 0, max: 255, step: 1 }),
+      d.addBinding(params.detect, 'thresholdMax', { label: 'threshold max', min: 0, max: 255, step: 1 }),
+      d.addBinding(params.detect, 'levels', { min: 1, max: 8, step: 1 }),
+    ]
+    const quadtreeBindings = [
+      d.addBinding(params.detect, 'quadDetail', { label: 'detail', min: 1, max: 80, step: 1 }),
+      d.addBinding(params.detect, 'quadMinDepth', { label: 'min depth', min: 1, max: 10, step: 1 }),
+      d.addBinding(params.detect, 'quadDepth', { label: 'max depth', min: 1, max: 10, step: 1 }),
+    ]
     d.addBinding(params.detect, 'blur', { min: 0, max: 10, step: 1 })
     d.addBinding(params.detect, 'processSize', { label: 'resolution', min: 128, max: 1024, step: 32 })
     d.addBinding(params.detect, 'minSize', { label: 'min size', min: 1, max: 1000, step: 1 })
@@ -124,6 +132,9 @@ export function ControlPane(props: Props) {
     label.addBinding(params.label, 'backgroundColor', { label: 'bg color' })
 
     function syncVisibility() {
+      // 未知の method は Worker が threshold として扱うので、それに合わせる
+      for (const b of thresholdBindings) b.hidden = params.detect.method === 'quadtree'
+      for (const b of quadtreeBindings) b.hidden = params.detect.method !== 'quadtree'
       meshSpacing.hidden = params.fill.mode !== 'mesh'
       meshWidth.hidden = params.fill.mode !== 'mesh'
       neighbors.hidden = params.lines.rule !== 'nearest'

@@ -25,9 +25,12 @@ Try it right away in your browser, no setup needed.
 **[blobframe.vercel.app](https://blobframe.vercel.app)**
 
 ## Features
-Open an image, and blobframe finds bright (or dark) regions and frames them. Every part of the look can be changed from the settings panel, and the result is redrawn as you move a slider.
+Open an image, and blobframe finds regions and frames them. Every part of the look can be changed from the settings panel, and the result is redrawn as you move a slider.
 
-- **Detection**: brightness threshold with several levels, so large and small boxes mix. Min and max box size, max count, blur, and padding are adjustable.
+- **Detection**: two methods.
+  - Threshold: bright (or dark) regions, found at several brightness levels, so large and small boxes mix.
+  - Quadtree: the image is split into smaller cells where it has more detail, so boxes gather around edges and texture.
+  - Min and max box size, max count, blur, and padding are adjustable for both.
 - **Boxes**: solid, dashed, or corner-only outlines; solid or mesh fill.
 - **Inside the boxes**: invert, monochrome, zoom. The area outside can be dimmed or made monochrome.
 - **Lines**: connect boxes in a chain or to their nearest neighbors, with straight or curved, solid or dashed lines.
@@ -96,7 +99,7 @@ This project is built with the following technologies and open-source libraries.
 - **Settings panel**: [Tweakpane](https://tweakpane.github.io/docs/)
 - **Icons**: [Lucide](https://lucide.dev/) (Licensed under ISC)
 - **Font**: [Roboto Mono](https://fonts.google.com/specimen/Roboto+Mono) via [Fontsource](https://fontsource.org/) (Licensed under SIL OFL 1.1)
-- **Detection**: own implementation in a Web Worker (threshold, connected-component labeling)
+- **Detection**: own implementation in a Web Worker (threshold with connected-component labeling, quadtree with integral images)
 - **Drawing**: Canvas 2D
 - **Hosting**: [Vercel](https://vercel.com/)
 
@@ -110,7 +113,7 @@ This project is built with the following technologies and open-source libraries.
 │   │   └── pane/          # Tweakpane customizations (own dropdown plugin, folder icons, CSS)
 │   └── lib/
 │       ├── settings.ts    # Settings type, defaults, loading saved JSON
-│       ├── detect/        # detector.ts (main thread), detect.worker.ts, threshold.ts
+│       ├── detect/        # detector.ts (main thread), detect.worker.ts, threshold.ts, quadtree.ts, common.ts
 │       └── render/        # render.ts (layers), connections.ts (line pairs), label.ts (label templates)
 ├── docs/                  # Design docs (requirements, architecture, settings)
 ├── .githooks/             # pre-commit, commit-msg
