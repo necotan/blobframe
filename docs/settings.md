@@ -7,9 +7,11 @@ The `Settings` object (`src/lib/settings.ts`) is the app state, what is saved in
 | Place | Key or name | Written by |
 |---|---|---|
 | `localStorage` | `blobframe:settings` | `App.tsx`, on every change |
-| Preset file | `blobframe-preset-<timestamp>.json` | Save preset button in `ControlPane.tsx` |
+| Preset file | `blobframe-preset-<timestamp>.json` | Save file button in the Preset folder of `ControlPane.tsx` |
 
 Both are plain `JSON.stringify(settings)` with no version field.
+
+The selected built-in preset is not stored. The panel finds it by comparing the settings with each preset (`matchPreset` in `presets.ts`), and shows Custom when none matches.
 
 ## Loading rules
 

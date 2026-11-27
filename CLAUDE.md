@@ -41,7 +41,7 @@ blobframe: a browser tool that detects regions (blobs) in an image and draws box
 - `src/components/ControlPane.tsx`: the Tweakpane panel. It owns its own copy of the settings and reports changes through `onChange`.
 - `src/components/pane/`: Tweakpane customizations. `dropdownPlugin.ts` replaces every list (`options`) with an own dropdown; `folderIcons.ts` and `pane.css` restyle the folder marks. Icons come from `lucide`.
 - `src/lib/fonts.ts`: reads the app font (`--font-mono` in `src/index.css`, Roboto Mono) for canvas labels and waits for it to load.
-- `src/lib/settings.ts`: `Settings` type, defaults, and `mergeSettings` for saved JSON.
+- `src/lib/settings.ts`: `Settings` type, defaults, and `mergeSettings` for saved JSON. `src/lib/presets.ts`: built-in presets.
 - `src/lib/detect/`: detection. `detector.ts` (main thread side) downscales the image and talks to `detect.worker.ts`; methods (`threshold.ts`, `quadtree.ts`) are pure functions; helpers shared by methods are in `common.ts`.
 - `src/lib/render/`: drawing. `render.ts` draws the layers; `connections.ts` picks line pairs; `label.ts` expands label templates.
 - `.githooks/`: `pre-commit` (lint, type check) and `commit-msg` (line 1 format). Enable once per clone: `git config core.hooksPath .githooks`.

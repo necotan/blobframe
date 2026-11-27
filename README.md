@@ -35,7 +35,8 @@ Open an image, and blobframe finds regions and frames them. Every part of the lo
 - **Inside the boxes**: invert, monochrome, zoom. The area outside can be dimmed or made monochrome.
 - **Lines**: connect boxes in a chain or to their nearest neighbors, with straight or curved, solid or dashed lines.
 - **Markers and labels**: a cross, dot, or circle at the center, and labels from a template such as `X{x:03}Y{y:03}` (-> `X075Y034`).
-- **Export**: PNG at the original resolution. Settings can be saved and loaded as preset JSON files.
+- **Presets**: six built-in looks (Default, Tracker, Quadtree Mesh, Minimal, Invert, Blueprint) to start from. Your own settings can be saved and loaded as JSON files.
+- **Export**: PNG at the original resolution.
 
 All processing runs in your browser. Images are never uploaded.
 
@@ -43,9 +44,10 @@ Images only for now; video support is planned. See [docs/requirements.md](docs/r
 
 ## Usage
 1. Drop an image on the page, paste one, or click **Open image**.
-2. Adjust detection in the **Detect** folder until the boxes land where you want.
-3. Change the look in the other folders (Box effect, Fill, Stroke, Lines, Marker, Label, Background).
-4. Click **Export PNG**.
+2. Pick a look in the **Preset** folder.
+3. Adjust detection in the **Detect** folder until the boxes land where you want.
+4. Change the look in the other folders (Box effect, Fill, Stroke, Lines, Marker, Label, Background).
+5. Click **Export PNG**.
 
 Line widths and text sizes scale with the image, so a preset looks the same on small and large images.
 
@@ -113,6 +115,7 @@ This project is built with the following technologies and open-source libraries.
 │   │   └── pane/          # Tweakpane customizations (own dropdown plugin, folder icons, CSS)
 │   └── lib/
 │       ├── settings.ts    # Settings type, defaults, loading saved JSON
+│       ├── presets.ts     # Built-in presets
 │       ├── detect/        # detector.ts (main thread), detect.worker.ts, threshold.ts, quadtree.ts, common.ts
 │       └── render/        # render.ts (layers), connections.ts (line pairs), label.ts (label templates)
 ├── docs/                  # Design docs (requirements, architecture, settings)

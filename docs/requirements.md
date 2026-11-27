@@ -13,7 +13,7 @@ What blobframe does and what is planned. How the code is organized is in `docs/a
 | Depth | `DetectSettings.quadDepth`, `quadMinDepth` | How many times a quadtree cell was split. Each split halves the side. |
 | Detail | `DetectSettings.quadDetail` | Standard deviation of brightness inside a quadtree cell. |
 | Style | every `Settings` group except `detect` | How regions are drawn. Changing it does not re-run detection. |
-| Preset | JSON file of `Settings` | Saved and loaded from the File folder of the panel. |
+| Preset | `Settings` with a name | Built-in ones are in `presets.ts`. A preset file is `Settings` as JSON, saved and loaded from the Preset folder of the panel. |
 | Size unit | `u` in `render.ts` | 1/1000 of the image's long side. Style sizes are in this unit. |
 
 ## Overview
@@ -45,7 +45,8 @@ What blobframe does and what is planned. How the code is organized is in `docs/a
 - Marker: none, cross, dot, circle.
 - Label: template (`{x:03}` style placeholders), coordinates in pixels or 0-100, position, font size, colors, background band.
 - Output: PNG at the source resolution.
-- Settings: saved automatically in the browser; presets saved and loaded as JSON; reset to defaults.
+- Presets: six built-in looks (Default, Tracker, Quadtree Mesh, Minimal, Invert, Blueprint). Applying one replaces all settings, detection included. The list shows Custom when the settings match no preset.
+- Settings: saved automatically in the browser; saved and loaded as JSON files. Choosing the Default preset resets to defaults.
 - UI text is English.
 
 ## Roadmap
