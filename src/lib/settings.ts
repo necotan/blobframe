@@ -73,7 +73,7 @@ export type Settings = {
   }
 }
 
-const GREEN = '#3dff3d'
+const WHITE = '#ffffff'
 
 export const DEFAULT_SETTINGS: Settings = {
   detect: {
@@ -98,12 +98,12 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   effect: {
     invert: false,
-    mono: true,
+    mono: false,
     zoom: 1,
   },
   fill: {
-    mode: 'mesh',
-    color: GREEN,
+    mode: 'none',
+    color: WHITE,
     opacity: 0.35,
     meshSpacing: 3,
     meshWidth: 0.6,
@@ -111,24 +111,24 @@ export const DEFAULT_SETTINGS: Settings = {
   stroke: {
     enabled: true,
     style: 'solid',
-    color: GREEN,
-    width: 1.5,
+    color: WHITE,
+    width: 1,
   },
   lines: {
     rule: 'nearest',
     neighbors: 1,
     origin: 'bottom',
-    shape: 'curve',
+    shape: 'straight',
     curvature: 0.3,
-    dashed: true,
-    color: GREEN,
+    dashed: false,
+    color: WHITE,
     width: 1,
-    opacity: 0.8,
+    opacity: 0.6,
   },
   marker: {
     shape: 'cross',
     size: 8,
-    color: GREEN,
+    color: WHITE,
   },
   label: {
     enabled: true,
@@ -138,7 +138,7 @@ export const DEFAULT_SETTINGS: Settings = {
     size: 12,
     color: '#000000',
     background: true,
-    backgroundColor: GREEN,
+    backgroundColor: WHITE,
   },
 }
 

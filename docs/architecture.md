@@ -78,6 +78,8 @@ image (ImageBitmap)
 2. Keep every value on the slider's step and inside its range in `ControlPane.tsx`, and write colors as lowercase `#rrggbb`. The panel writes back rounded values, and a preset that changes when applied shows as Custom.
 3. When a new settings key is added, check whether existing presets should set it.
 
+Presets inherit every key they do not set from `DEFAULT_SETTINGS`, so changing a default changes those presets too. When changing `DEFAULT_SETTINGS`, compare the values of all presets before and after, and set the old value explicitly in each preset whose look would change.
+
 ## Settings panel customizations
 
 Tweakpane is used as is from npm. Its look is changed only from `src/components/pane/`:
