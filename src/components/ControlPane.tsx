@@ -1,10 +1,14 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { Pane } from 'tweakpane'
 import { downloadBlob, pickFile, timestamp } from '../lib/download'
+import { PRESETS, matchPreset } from '../lib/presets'
 import { DEFAULT_SETTINGS, cloneSettings, mergeSettings, type Settings } from '../lib/settings'
 import { DropdownPlugin } from './pane/dropdownPlugin'
 import { replaceFolderMarks } from './pane/folderIcons'
 import './pane/pane.css'
+
+const CUSTOM = 'custom'
+const PRESET_OPTIONS = Object.fromEntries([...PRESETS.map((p) => [p.name, p.id]), ['Custom', CUSTOM]])
 
 type Props = {
   /** パネル生成時の初期値。変わるとパネルを作り直すので、呼び出し側で固定した値を渡すこと */
@@ -32,11 +36,14 @@ export function ControlPane(props: Props) {
     pane.registerPlugin({ id: 'blobframe', plugins: [DropdownPlugin] })
     const emit = () => propsRef.current.onChange(cloneSettings(params))
 
+    // pane.refresh() は値の変わったバインディングごとに change を出すので、その間は個別の処理を止めて最後に1回だけ行う
+    let replacing = false
     const replaceAll = (next: Settings) => {
       for (const group of Object.keys(params) as (keyof Settings)[]) Object.assign(params[group], next[group])
+      replacing = true
       pane.refresh()
-      syncVisibility()
-      emit()
+      replacing = false
+      afterChange()
     }
 
     const file = pane.addFolder({ title: 'File' })
@@ -45,11 +52,23 @@ export function ControlPane(props: Props) {
     exportButton.on('click', () => propsRef.current.onExportImage())
     exportButton.disabled = !propsRef.current.canExport
     exportButtonRef.current = exportButton
-    file.addButton({ title: 'Save preset' }).on('click', () => {
+
+    // 一覧の表示は設定から導く。どのプリセットとも一致しなければ Custom
+    const presetState = { preset: matchPreset(params) ?? CUSTOM }
+    const presetFolder = pane.addFolder({ title: 'Preset' })
+    const presetBinding = presetFolder.addBinding(presetState, 'preset', { options: PRESET_OPTIONS })
+    presetBinding.on('change', (e) => {
+      const preset = PRESETS.find((p) => p.id === e.value)
+      // Custom を選んでも適用するものはないので、表示を設定に合わせ直す
+      if (!preset) return syncPreset()
+      // 一覧の表示を合わせるための書き換えでも change が来るので、すでに一致しているときは何もしない
+      if (matchPreset(params) !== preset.id) replaceAll(preset.settings)
+    })
+    presetFolder.addButton({ title: 'Save file' }).on('click', () => {
       const json = JSON.stringify(params, null, 2)
       downloadBlob(new Blob([json], { type: 'application/json' }), `blobframe-preset-${timestamp()}.json`)
     })
-    file.addButton({ title: 'Load preset' }).on('click', async () => {
+    presetFolder.addButton({ title: 'Load file' }).on('click', async () => {
       const f = await pickFile('application/json,.json')
       if (!f) return
       try {
@@ -58,7 +77,6 @@ export function ControlPane(props: Props) {
         // 壊れた JSON は読み込まずに今の設定を保つ
       }
     })
-    file.addButton({ title: 'Reset' }).on('click', () => replaceAll(cloneSettings(DEFAULT_SETTINGS)))
 
     const d = pane.addFolder({ title: 'Detect' })
     d.addBinding(params.detect, 'method', { options: { Threshold: 'threshold', Quadtree: 'quadtree' } })
@@ -140,12 +158,25 @@ export function ControlPane(props: Props) {
       neighbors.hidden = params.lines.rule !== 'nearest'
       curvature.hidden = params.lines.shape !== 'curve'
     }
+    function syncPreset() {
+      const id = matchPreset(params) ?? CUSTOM
+      if (presetState.preset === id) return
+      presetState.preset = id
+      presetBinding.refresh()
+    }
+
+    function afterChange() {
+      syncVisibility()
+      syncPreset()
+      emit()
+    }
+
     syncVisibility()
     replaceFolderMarks(pane.element)
 
-    pane.on('change', () => {
-      syncVisibility()
-      emit()
+    pane.on('change', (e) => {
+      if (replacing || e.target === presetBinding) return
+      afterChange()
     })
 
     return () => {

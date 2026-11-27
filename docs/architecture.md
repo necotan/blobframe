@@ -72,6 +72,12 @@ image (ImageBitmap)
 2. Add the binding in `ControlPane.tsx`; hide it in `syncVisibility` when it has no effect.
 3. Draw it in `render.ts` in the right layer, using `u` for sizes.
 
+## Adding a built-in preset
+
+1. Add an entry to `PRESETS` in `src/lib/presets.ts` with only the keys that differ from `DEFAULT_SETTINGS`.
+2. Keep every value on the slider's step and inside its range in `ControlPane.tsx`, and write colors as lowercase `#rrggbb`. The panel writes back rounded values, and a preset that changes when applied shows as Custom.
+3. When a new settings key is added, check whether existing presets should set it.
+
 ## Settings panel customizations
 
 Tweakpane is used as is from npm. Its look is changed only from `src/components/pane/`:
