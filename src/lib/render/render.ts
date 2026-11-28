@@ -31,10 +31,7 @@ export function render(ctx: CanvasRenderingContext2D, source: Source, regions: B
   drawConnections(ctx, regions, s.lines, u, W, H)
   if (s.stroke.enabled) for (const r of regions) drawStroke(ctx, r, s.stroke, u)
   for (const r of regions) drawMarker(ctx, r, s.marker, u)
-  if (s.label.enabled) {
-    const fontFamily = monoFontFamily()
-    for (const r of regions) drawLabel(ctx, r, s.label, u, W, H, fontFamily)
-  }
+  if (s.label.enabled) drawLabels(ctx, regions, s.label, u, W, H)
   ctx.restore()
 }
 
@@ -231,41 +228,80 @@ function drawMarker(ctx: CanvasRenderingContext2D, r: BlobRegion, s: Settings['m
   ctx.restore()
 }
 
-function drawLabel(
-  ctx: CanvasRenderingContext2D,
-  r: BlobRegion,
-  s: Settings['label'],
-  u: number,
-  W: number,
-  H: number,
-  fontFamily: string,
-) {
-  const text = formatLabel(s.template, r, W, H, s.coordScale)
-  if (!text) return
+type Rect = { x: number; y: number; w: number; h: number }
+
+function drawLabels(ctx: CanvasRenderingContext2D, regions: BlobRegion[], s: Settings['label'], u: number, W: number, H: number) {
   const fontSize = s.size * u
   const pad = fontSize * 0.2
+  const h = fontSize + pad * 2
+  // 保存データの overlap は値を確かめていないので、未知の値は今までどおり重ねて描く
+  const avoid = s.overlap === 'move' || s.overlap === 'hide'
   ctx.save()
-  ctx.font = `${fontSize}px ${fontFamily}`
+  ctx.font = `${fontSize}px ${monoFontFamily()}`
   ctx.textBaseline = 'top'
-  const boxW = ctx.measureText(text).width + pad * 2
-  const boxH = fontSize + pad * 2
-
-  let x = r.x
-  let y = r.y - boxH
-  if (s.position === 'inside' || (s.position === 'top-left' && y < 0)) y = r.y
-  else if (s.position === 'center') {
-    x = r.cx - boxW / 2
-    y = r.cy - boxH / 2
-  } else if (s.position === 'bottom-left') y = r.y + r.h
-  // 画像の外にはみ出すと書き出し時に切れるので内側へ寄せる
-  x = Math.min(Math.max(0, x), W - boxW)
-  y = Math.min(Math.max(0, y), H - boxH)
-
-  if (s.background) {
-    ctx.fillStyle = s.backgroundColor
-    ctx.fillRect(x, y, boxW, boxH)
+  // regions は面積の大きい順なので、先に置く大きい箱のラベルほど指定の位置に残る
+  const placed: Rect[] = []
+  for (const r of regions) {
+    const text = formatLabel(s.template, r, W, H, s.coordScale)
+    if (!text) continue
+    const w = ctx.measureText(text).width + pad * 2
+    const candidates = labelCandidates(r, s.position, w, h, W, H, avoid)
+    const free = candidates.find((c) => !placed.some((p) => intersects(p, c)))
+    const rect = free ?? (s.overlap === 'hide' ? null : candidates[0]!)
+    if (!rect) continue
+    placed.push(rect)
+    if (s.background) {
+      ctx.fillStyle = s.backgroundColor
+      ctx.fillRect(rect.x, rect.y, rect.w, rect.h)
+    }
+    ctx.fillStyle = s.color
+    ctx.fillText(text, rect.x + pad, rect.y + pad)
   }
-  ctx.fillStyle = s.color
-  ctx.fillText(text, x + pad, y + pad)
   ctx.restore()
+}
+
+/** 先頭が指定の位置。avoid のときは、重なったときに順に試す箱の上下、右寄せ、内側の位置を後ろに足す。 */
+function labelCandidates(
+  r: BlobRegion,
+  position: Settings['label']['position'],
+  w: number,
+  h: number,
+  W: number,
+  H: number,
+  avoid: boolean,
+): Rect[] {
+  let x = r.x
+  let y = r.y - h
+  if (position === 'inside' || (position === 'top-left' && y < 0)) y = r.y
+  else if (position === 'center') {
+    x = r.cx - w / 2
+    y = r.cy - h / 2
+  } else if (position === 'bottom-left') y = r.y + r.h
+  const points = [[x, y]]
+  if (avoid) {
+    const right = r.x + r.w - w
+    const bottom = r.y + r.h
+    points.push(
+      [r.x, r.y - h],
+      [r.x, bottom],
+      [right, r.y - h],
+      [right, bottom],
+      [r.x, r.y],
+      [right, r.y],
+      [r.x, bottom - h],
+      [right, bottom - h],
+    )
+  }
+  // 画像の外にはみ出すと書き出し時に切れるので内側へ寄せる
+  return points.map(([px, py]) => ({
+    x: Math.min(Math.max(0, px!), W - w),
+    y: Math.min(Math.max(0, py!), H - h),
+    w,
+    h,
+  }))
+}
+
+// 辺が接しているだけなら重なりとみなさない
+function intersects(a: Rect, b: Rect): boolean {
+  return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h
 }

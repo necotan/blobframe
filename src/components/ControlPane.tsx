@@ -185,6 +185,7 @@ export function ControlPane(props: Props) {
     label.addBinding(params.label, 'position', {
       options: { 'Top left': 'top-left', Inside: 'inside', Center: 'center', 'Bottom left': 'bottom-left' },
     })
+    label.addBinding(params.label, 'overlap', { options: { Allow: 'allow', Move: 'move', 'Move or hide': 'hide' } })
     label.addBinding(params.label, 'size', { min: 4, max: 48, step: 1 })
     label.addBinding(params.label, 'color')
     label.addBinding(params.label, 'background')

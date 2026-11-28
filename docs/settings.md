@@ -138,6 +138,7 @@ The selected built-in preset is not stored. The panel finds it by comparing the 
 | `template` | string | Placeholders `{id}` `{x}` `{y}` (center) `{left}` `{top}` `{w}` `{h}` `{area}` `{lum}`. `{x:03}` pads with zeros to 3 digits, `{x:3}` with spaces. Unknown placeholders stay as text. |
 | `coordScale` | `pixel` / `percent` | `percent` is 0-100 of the image width (x) and height (y). `area` and `lum` are never scaled. |
 | `position` | `top-left` / `inside` / `center` / `bottom-left` | `top-left` is above the box and falls back to inside at the top edge. |
+| `overlap` | `allow` / `move` / `hide` | When a label would overlap one already drawn. Labels are placed in id order, so larger boxes keep their position. `move` tries above, below, right-aligned, and inside positions and overlaps if none is free; `hide` skips the label instead. An unknown value is treated as `allow`. |
 | `size` | u | Font size. |
 | `color` | `#rrggbb` | Text color. |
 | `background` | boolean | Draw a band behind the text. |
