@@ -43,7 +43,7 @@ What blobframe does and what is planned. How the code is organized is in `docs/a
 - Stroke: on or off, solid, dashed, or corners only.
 - Lines: none, chain (greedy nearest path from the largest region), nearest k, snapline (from the bottom, center, or top of the image to each region); straight or curved (curvature); dashed; color, width, opacity.
 - Marker: none, cross, dot, circle.
-- Label: template (`{x:03}` style placeholders), coordinates in pixels or 0-100, position, font size, colors, background band.
+- Label: template (`{x:03}` style placeholders), coordinates in pixels or 0-100, position, overlap handling (allow, move to a free position, or move and hide when none is free), font size, colors, background band.
 - Output: JPEG (default), PNG, or WebP; quality for JPEG and WebP; scale 0.1-1 of the source resolution, redrawn at that size so lines and labels stay sharp. Export settings are kept in the browser apart from the look settings, so presets do not change them.
 - Presets: twelve built-in looks (Default, Tracker, Quadtree Mesh, Minimal, Invert, Blueprint, Hacker, ESP, Aimbot, Censor, Heat, Frosted). Applying one replaces all settings, detection included. The list shows Custom when the settings match no preset.
 - Settings: saved automatically in the browser; saved and loaded as JSON files. Choosing the Default preset resets to defaults.

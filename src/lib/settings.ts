@@ -77,6 +77,8 @@ export type Settings = {
     template: string
     coordScale: 'pixel' | 'percent'
     position: 'top-left' | 'inside' | 'center' | 'bottom-left'
+    /** 先に置いたラベルと重なるとき。move は空いている位置へずらし、置けなければ重ねる。hide は置けなければ出さない */
+    overlap: 'allow' | 'move' | 'hide'
     size: number
     color: string
     background: boolean
@@ -152,6 +154,7 @@ export const DEFAULT_SETTINGS: Settings = {
     template: 'X{x:03}Y{y:03}',
     coordScale: 'percent',
     position: 'top-left',
+    overlap: 'allow',
     size: 12,
     color: '#000000',
     background: true,

@@ -57,7 +57,7 @@ image (ImageBitmap; image.ts shrinks it if the device cannot draw it on a canvas
 5. Lines.
 6. Stroke.
 7. Markers.
-8. Labels (kept inside the image so export does not cut them).
+8. Labels (kept inside the image so export does not cut them). With overlap avoidance, each label is placed in id order at the first candidate position that does not overlap a label already placed.
 
 ## Effects without pixel loops
 
