@@ -1,7 +1,8 @@
 import type { Settings } from '../settings'
 import type { BlobRegion } from '../types'
 import { monoFontFamily } from '../fonts'
-import { connectionSegments } from './connections'
+import { connectionSegments, type Point } from './connections'
+import { outward, shorten, trimLine, type Curve } from './lineEnds'
 import { formatLabel } from './label'
 
 type Source = CanvasImageSource & { width: number; height: number }
@@ -158,27 +159,87 @@ function drawConnections(
 ) {
   const segments = connectionSegments(regions, s, W, H)
   if (!segments.length) return
+  const lineWidth = s.width * u
+  const gap = Math.max(0, s.gap) * u
+  const size = Math.max(0, s.capSize) * u
+  // 保存データの cap は値を確かめていないので、未知の値は飾りなしとして扱う
+  const startCap = capShape(s.cap === 'arrow' ? 'none' : s.cap)
+  const endCap = capShape(s.cap)
+  const bodies: Curve[] = []
+  const caps: [Point, Point, CapShape][] = []
+  for (const seg of segments) {
+    // 曲がり方が ends や gap で変わらないよう、制御点は切る前の両端から決める
+    const control = s.shape === 'curve' ? curveControl(seg.from, seg.to, s.curvature) : null
+    const curve = trimLine(seg, control, s.ends === 'edge', gap)
+    if (!curve) continue
+    // 透明度が 1 未満のとき線と飾りの重なりが濃く出ないよう、線を飾りの手前で止める
+    const body = shorten(curve, capInset(startCap, size, lineWidth), capInset(endCap, size, lineWidth))
+    if (body) bodies.push(body)
+    if (startCap) caps.push([curve.start, outward(curve, 'start'), startCap])
+    if (endCap) caps.push([curve.end, outward(curve, 'end'), endCap])
+  }
+
   ctx.save()
   ctx.globalAlpha = s.opacity
   ctx.strokeStyle = s.color
-  ctx.lineWidth = s.width * u
+  ctx.fillStyle = s.color
+  ctx.lineWidth = lineWidth
   ctx.setLineDash(s.dashed ? [4 * u, 4 * u] : [])
   ctx.beginPath()
-  for (const [a, b] of segments) {
-    ctx.moveTo(a.x, a.y)
-    if (s.shape === 'curve') {
-      // 中点から線分に垂直な方向へずらした点を制御点にする。curvature は線分の長さに対する比率
-      const mx = (a.x + b.x) / 2
-      const my = (a.y + b.y) / 2
-      const dx = b.x - a.x
-      const dy = b.y - a.y
-      ctx.quadraticCurveTo(mx - dy * s.curvature, my + dx * s.curvature, b.x, b.y)
-    } else {
-      ctx.lineTo(b.x, b.y)
+  for (const c of bodies) {
+    ctx.moveTo(c.start.x, c.start.y)
+    if (c.control) ctx.quadraticCurveTo(c.control.x, c.control.y, c.end.x, c.end.y)
+    else ctx.lineTo(c.end.x, c.end.y)
+  }
+  ctx.stroke()
+  // 飾りは種類ごとに1つのパスにまとめて描く。同じ点に集まった飾りが重なっても、透明度が重ねがけされない
+  ctx.setLineDash([])
+  ctx.beginPath()
+  for (const [p, d, cap] of caps) {
+    if (cap === 'arrow') {
+      const bx = p.x - d.x * size
+      const by = p.y - d.y * size
+      const hw = size * 0.4
+      ctx.moveTo(p.x, p.y)
+      ctx.lineTo(bx - d.y * hw, by + d.x * hw)
+      ctx.lineTo(bx + d.y * hw, by - d.x * hw)
+      ctx.closePath()
+    } else if (cap === 'dot') {
+      ctx.moveTo(p.x + size / 2, p.y)
+      ctx.arc(p.x, p.y, size / 2, 0, Math.PI * 2)
     }
+  }
+  ctx.fill()
+  ctx.beginPath()
+  for (const [p, d, cap] of caps) {
+    if (cap !== 'bar') continue
+    ctx.moveTo(p.x - (d.y * size) / 2, p.y + (d.x * size) / 2)
+    ctx.lineTo(p.x + (d.y * size) / 2, p.y - (d.x * size) / 2)
   }
   ctx.stroke()
   ctx.restore()
+}
+
+// 中点から線分に垂直な方向へずらした点を制御点にする。curvature は線分の長さに対する比率
+function curveControl(a: Point, b: Point, curvature: number): Point {
+  return { x: (a.x + b.x) / 2 - (b.y - a.y) * curvature, y: (a.y + b.y) / 2 + (b.x - a.x) * curvature }
+}
+
+type CapShape = 'arrow' | 'dot' | 'bar'
+
+// 片端の飾りの形。arrow と arrows はどちらも矢印で、付ける端の数だけが違う
+function capShape(cap: string): CapShape | null {
+  if (cap === 'arrow' || cap === 'arrows') return 'arrow'
+  if (cap === 'dot' || cap === 'bar') return cap
+  return null
+}
+
+function capInset(cap: CapShape | null, size: number, lineWidth: number): number {
+  if (cap === 'arrow') return size
+  if (cap === 'dot') return size / 2
+  // 横棒は線と同じ幅で描くので、その半分だけ止めれば重ならない
+  if (cap === 'bar') return lineWidth / 2
+  return 0
 }
 
 function drawStroke(ctx: CanvasRenderingContext2D, r: BlobRegion, s: Settings['stroke'], u: number) {

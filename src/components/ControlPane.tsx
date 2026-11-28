@@ -179,6 +179,12 @@ export function ControlPane(props: Props) {
     lines.addBinding(params.lines, 'color')
     lines.addBinding(params.lines, 'width', { min: 0.5, max: 10, step: 0.5 })
     lines.addBinding(params.lines, 'opacity', { min: 0, max: 1, step: 0.05 })
+    lines.addBinding(params.lines, 'ends', { options: { Center: 'center', Edge: 'edge' } })
+    lines.addBinding(params.lines, 'gap', { min: 0, max: 50, step: 1 })
+    lines.addBinding(params.lines, 'cap', {
+      options: { None: 'none', Arrow: 'arrow', Arrows: 'arrows', Dot: 'dot', Bar: 'bar' },
+    })
+    const capSize = lines.addBinding(params.lines, 'capSize', { label: 'cap size', min: 1, max: 30, step: 0.5 })
 
     const marker = pane.addFolder({ title: 'Marker' })
     marker.addBinding(params.marker, 'shape', {
@@ -212,6 +218,7 @@ export function ControlPane(props: Props) {
       radius.hidden = params.lines.rule !== 'radius'
       origin.hidden = params.lines.rule !== 'snapline'
       curvature.hidden = params.lines.shape !== 'curve'
+      capSize.hidden = params.lines.cap === 'none'
     }
     function syncPreset() {
       const id = matchPreset(params) ?? CUSTOM

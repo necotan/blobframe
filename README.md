@@ -33,7 +33,7 @@ Open an image, and blobframe finds regions and frames them. Every part of the lo
   - Min and max box size, max count, blur, and padding are adjustable for both. An edge margin keeps boxes away from the image edges, and smaller boxes that overlap a larger one can be removed.
 - **Boxes**: solid, dashed, or corner-only outlines; solid or mesh fill.
 - **Inside the boxes**: zoom, blur, mosaic, monochrome, tint, invert, combined freely. The area outside can be dimmed or made monochrome.
-- **Lines**: connect boxes in a chain, to their nearest neighbors, as a minimum spanning tree, as a Delaunay triangulation, or to every box within a radius, or draw snaplines from the bottom, center, or top of the image to each box, with straight or curved, solid or dashed lines.
+- **Lines**: connect boxes in a chain, to their nearest neighbors, as a minimum spanning tree, as a Delaunay triangulation, or to every box within a radius, or draw snaplines from the bottom, center, or top of the image to each box, with straight or curved, solid or dashed lines. Lines can stop at the box edge, with arrows, dots, or bars at the ends.
 - **Markers and labels**: a cross, dot, or circle at the center, and labels from a template such as `X{x:03}Y{y:03}` (-> `X075Y034`). Overlapping labels can be moved to a free spot or hidden.
 - **Presets**: twelve built-in looks (Default, Tracker, Quadtree Mesh, Minimal, Invert, Blueprint, Hacker, ESP, Aimbot, Censor, Heat, Frosted) to start from. Your own settings can be saved and loaded as JSON files.
 - **Export**: JPEG, PNG, or WebP, with quality and scale (10-100% of the original resolution).
@@ -119,7 +119,7 @@ This project is built with the following technologies and open-source libraries.
 │       ├── exportSettings.ts # Export format, quality, scale
 │       ├── image.ts       # Image loading, shrinking images too large for the device
 │       ├── detect/        # detector.ts (main thread), detect.worker.ts, threshold.ts, quadtree.ts, common.ts
-│       └── render/        # render.ts (layers), connections.ts (line pairs), label.ts (label templates)
+│       └── render/        # render.ts (layers), connections.ts (line pairs), lineEnds.ts (line trimming), label.ts (label templates)
 ├── docs/                  # Design docs (requirements, architecture, settings)
 ├── .githooks/             # pre-commit, commit-msg
 ├── index.html
