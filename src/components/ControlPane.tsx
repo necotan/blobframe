@@ -128,6 +128,7 @@ export function ControlPane(props: Props) {
     d.addBinding(params.detect, 'maxSize', { label: 'max size', min: 10, max: 8000, step: 10 })
     d.addBinding(params.detect, 'maxCount', { label: 'max count', min: 1, max: 300, step: 1 })
     d.addBinding(params.detect, 'padding', { min: 0, max: 100, step: 1 })
+    d.addBinding(params.detect, 'margin', { label: 'edge margin', min: 0, max: 2000, step: 1 })
 
     const bg = pane.addFolder({ title: 'Background', expanded: false })
     bg.addBinding(params.background, 'dim', { min: 0, max: 1, step: 0.05 })

@@ -45,7 +45,7 @@ export type SourceFrame = { scale: number; width: number; height: number }
 
 /**
  * 処理画像上の矩形(x1, y1 は含まない)を元画像の座標に直し、padding を足して BlobRegion にする。
- * minSize / maxSize に収まらなければ null。id は 0 のままなので、並びを決めた後に振ること。
+ * minSize / maxSize に収まらないか、画像の端の margin にかかるときは null。id は 0 のままなので、並びを決めた後に振ること。
  */
 export function toRegion(
   x0: number,
@@ -57,10 +57,19 @@ export function toRegion(
   src: SourceFrame,
   s: DetectSettings,
 ): BlobRegion | null {
-  const left = clamp(x0 * src.scale - s.padding, 0, src.width)
-  const top = clamp(y0 * src.scale - s.padding, 0, src.height)
-  const right = clamp(x1 * src.scale + s.padding, 0, src.width)
-  const bottom = clamp(y1 * src.scale + s.padding, 0, src.height)
+  // 保存データは型しか確かめていないので、負の値はオフとして扱う
+  const m = Math.max(0, s.margin)
+  const bx0 = x0 * src.scale
+  const by0 = y0 * src.scale
+  const bx1 = x1 * src.scale
+  const by1 = y1 * src.scale
+  // 0 のときは確かめない。画像の端に接した箱が浮動小数の誤差で落ちないようにするため
+  if (m > 0 && (bx0 < m || by0 < m || bx1 > src.width - m || by1 > src.height - m)) return null
+  // padding で余白の中に描かれないよう、画像の端ではなく余白の内側で切る
+  const left = clamp(bx0 - s.padding, m, src.width - m)
+  const top = clamp(by0 - s.padding, m, src.height - m)
+  const right = clamp(bx1 + s.padding, m, src.width - m)
+  const bottom = clamp(by1 + s.padding, m, src.height - m)
   const w = right - left
   const h = bottom - top
   if (w < s.minSize || h < s.minSize || w > s.maxSize || h > s.maxSize) return null

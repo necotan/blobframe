@@ -42,7 +42,7 @@ image (ImageBitmap; image.ts shrinks it if the device cannot draw it on a canvas
 ## Coordinate systems and units
 
 - `BlobRegion` coordinates are in source image pixels. Detection works on a downscaled copy and scales boxes back by `source width / processed width`.
-- Detection sizes (`minSize`, `maxSize`, `padding`) are in source pixels, because they describe what to find in that image.
+- Detection sizes (`minSize`, `maxSize`, `padding`, `margin`) are in source pixels, because they describe what to find in that image.
 - Style sizes (line width, mesh spacing, marker size, font size) are in the size unit `u = max(width, height) / 1000`, so a preset looks the same on a 800 px and a 6000 px image.
 - Label coordinates are converted at draw time: pixels, or 0-100 of the image width and height.
 
@@ -71,7 +71,7 @@ image (ImageBitmap; image.ts shrinks it if the device cannot draw it on a canvas
 ## Adding a detection method
 
 1. Add the slug to `DetectSettings['method']` and its parameters to `DetectSettings` with defaults (`docs/settings.md`).
-2. Write the method as a pure function in `src/lib/detect/<method>.ts` that takes the downscaled grayscale (or RGBA) image and returns `BlobRegion[]` in source pixels. Use `toRegion` in `common.ts` to convert a rectangle to source pixels, add padding, and apply the size filter, so `minSize`, `maxSize`, and `padding` mean the same in every method. Return regions sorted by area, largest first: the `chain` line rule starts from the first region.
+2. Write the method as a pure function in `src/lib/detect/<method>.ts` that takes the downscaled grayscale (or RGBA) image and returns `BlobRegion[]` in source pixels. Use `toRegion` in `common.ts` to convert a rectangle to source pixels, add padding, and drop boxes that are out of the size range or reach into the edge margin, so `minSize`, `maxSize`, `padding`, and `margin` mean the same in every method. The check must happen before `maxCount` is applied, or margin would lower the box count. Return regions sorted by area, largest first: the `chain` line rule starts from the first region.
 3. Dispatch on `settings.method` in `detect.worker.ts`.
 4. Add the bindings in the Detect folder of `ControlPane.tsx` and hide the parameters of other methods in `syncVisibility`.
 
