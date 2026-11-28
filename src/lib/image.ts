@@ -18,7 +18,9 @@ export async function loadImage(file: Blob): Promise<LoadedImage> {
   const canvas = document.createElement('canvas')
   canvas.width = Math.floor(width * scale)
   canvas.height = Math.floor(height * scale)
-  const ctx = canvas.getContext('2d')!
+  const ctx = canvas.getContext('2d')
+  // iOS は canvas 全体のメモリ上限を超えると null を返す。例外にして読み込み失敗として表示させる
+  if (!ctx) throw new Error('canvas memory limit')
   ctx.imageSmoothingQuality = 'high'
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
   bitmap.close()

@@ -19,8 +19,16 @@ export function pickFile(accept: string): Promise<File | null> {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = accept
-    input.onchange = () => resolve(input.files?.[0] ?? null)
-    input.oncancel = () => resolve(null)
+    // iOS Safari は DOM に無い input を選択中に GC で片づけることがあり、そのとき選んだファイルは捨てられて change が来ない。
+    // 写真ライブラリが渡す前の準備に時間のかかる大きな写真ほど起きやすいので、選び終わるまでページに置いて参照を保つ
+    input.className = 'sr-only'
+    document.body.append(input)
+    const done = (file: File | null) => {
+      input.remove()
+      resolve(file)
+    }
+    input.addEventListener('change', () => done(input.files?.[0] ?? null), { once: true })
+    input.addEventListener('cancel', () => done(null), { once: true })
     input.click()
   })
 }
