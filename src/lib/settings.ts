@@ -18,6 +18,8 @@ export type DetectSettings = {
   maxSize: number
   maxCount: number
   padding: number
+  /** 画像の端からこの幅(元画像の px)に一部でもかかる箱は出さない。0 でオフ */
+  margin: number
 }
 
 export type Settings = {
@@ -98,6 +100,7 @@ export const DEFAULT_SETTINGS: Settings = {
     maxSize: 2000,
     maxCount: 40,
     padding: 4,
+    margin: 0,
   },
   background: {
     dim: 0.2,

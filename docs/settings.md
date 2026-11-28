@@ -68,6 +68,7 @@ The selected built-in preset is not stored. The panel finds it by comparing the 
 | `minSize`, `maxSize` | source px | Both box width and height must be within this range. quadtree also stops splitting when a cell would get smaller than `minSize`. |
 | `maxCount` | count | Largest regions kept, after merging for threshold. |
 | `padding` | source px | Added on every side of each box. |
+| `margin` | source px | Boxes that reach into this band along the image edges, even partly, are dropped. Padding is cut at the band. 0 turns it off. |
 
 ### background
 
