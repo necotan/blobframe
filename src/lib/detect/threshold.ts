@@ -1,6 +1,6 @@
 import type { DetectSettings } from '../settings'
 import type { BlobRegion } from '../types'
-import { boxBlur, toRegion, type GrayImage, type SourceFrame } from './common'
+import { boxBlur, iou, pickRegions, toRegion, type GrayImage, type SourceFrame } from './common'
 
 type Component = { minX: number; minY: number; maxX: number; maxY: number; count: number; lumSum: number }
 
@@ -59,13 +59,6 @@ function connectedComponents(img: GrayImage, mask: Uint8Array): Component[] {
   return [...components.values()]
 }
 
-function iou(a: BlobRegion, b: BlobRegion): number {
-  const ix = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x))
-  const iy = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y))
-  const inter = ix * iy
-  return inter / (a.w * a.h + b.w * b.h - inter)
-}
-
 function sameCenter(a: BlobRegion, b: BlobRegion): boolean {
   const limit = 0.15 * Math.max(a.w, a.h, b.w, b.h)
   return Math.abs(a.cx - b.cx) < limit && Math.abs(a.cy - b.cy) < limit
@@ -92,13 +85,6 @@ export function detectThreshold(gray: GrayImage, src: SourceFrame, s: DetectSett
 
   // 段階が隣り合うと同じ領域が同じ中心の入れ子の箱として何度も出て、ラベルが重なる。
   // 重なりが大きいか、中心がほぼ同じ箱は1つにまとめ、段階ごとに分かれた別の領域だけを残す
-  candidates.sort((a, b) => b.area - a.area)
-  const picked: BlobRegion[] = []
-  for (const c of candidates) {
-    if (picked.length >= s.maxCount) break
-    if (picked.every((p) => iou(p, c) < 0.85 && !sameCenter(p, c))) picked.push(c)
-  }
-  picked.forEach((r, i) => (r.id = i + 1))
-  return picked
+  return pickRegions(candidates, s, (p, c) => iou(p, c) >= 0.85 || sameCenter(p, c))
 }
 

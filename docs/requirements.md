@@ -36,7 +36,7 @@ What blobframe does and what is planned. How the code is organized is in `docs/a
   - Parameters: detail, min depth, max depth.
   - Only cells with at least half the detail limit become boxes, so flat areas stay empty. Cells larger than min depth are skipped.
   - `minSize` also stops splitting, so detailed areas are not lost as boxes too small to keep.
-- Shared detection parameters: blur, processing resolution, min and max box size, max count, padding, edge margin (no boxes within this distance of the image edges).
+- Shared detection parameters: blur, processing resolution, min and max box size, max count, max overlap (drop smaller boxes that overlap a larger one by more than this share), padding, edge margin (no boxes within this distance of the image edges).
 - Background: dim, monochrome.
 - In-box effects, applied in this order and combinable: zoom, blur or mosaic (mosaic wins when both are set; mosaic cells align to one grid over the whole image), monochrome, tint (keeps brightness, replaces hue and saturation), invert.
 - Fill: none, solid, mesh (spacing and line width).

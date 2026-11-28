@@ -1,6 +1,6 @@
 import type { DetectSettings } from '../settings'
 import type { BlobRegion } from '../types'
-import { boxBlur, toRegion, type GrayImage, type SourceFrame } from './common'
+import { boxBlur, pickRegions, toRegion, type GrayImage, type SourceFrame } from './common'
 
 // 分割しきれなかった平らなセルまで返すと画像全体が箱で埋まるので、
 // 分割の基準の半分以上の細かさがあるセルだけを残し、細部の周りに大小の箱が集まるようにする
@@ -46,11 +46,8 @@ export function detectQuadtree(gray: GrayImage, src: SourceFrame, s: DetectSetti
     if (region) candidates.push(region)
   }
 
-  // セル同士は重ならないので、しきい値方式のような重複の統合はいらない
-  candidates.sort((a, b) => b.area - a.area)
-  const picked = candidates.slice(0, s.maxCount)
-  picked.forEach((r, i) => (r.id = i + 1))
-  return picked
+  // セル同士は重ならないので、しきい値方式のような重複の統合はいらない。padding を足すと隣のセルと重なるので maxOverlap は効く
+  return pickRegions(candidates, s)
 }
 
 // 任意の矩形の合計と二乗和を O(1) で求め、セルごとのばらつきを画素数に関係なく出せるようにする

@@ -17,6 +17,8 @@ export type DetectSettings = {
   minSize: number
   maxSize: number
   maxCount: number
+  /** 残した大きい箱と、小さいほうの箱の面積のこの割合(0-1)を超えて重なる箱は出さない。1 でオフ */
+  maxOverlap: number
   padding: number
   /** 画像の端からこの幅(元画像の px)に一部でもかかる箱は出さない。0 でオフ */
   margin: number
@@ -99,6 +101,7 @@ export const DEFAULT_SETTINGS: Settings = {
     minSize: 20,
     maxSize: 2000,
     maxCount: 40,
+    maxOverlap: 1,
     padding: 4,
     margin: 0,
   },

@@ -66,7 +66,8 @@ The selected built-in preset is not stored. The panel finds it by comparing the 
 | `blur` | px of the processed image | Box blur radius before detection. |
 | `processSize` | px | Long side of the downscaled copy used for detection. |
 | `minSize`, `maxSize` | source px | Both box width and height must be within this range. quadtree also stops splitting when a cell would get smaller than `minSize`. |
-| `maxCount` | count | Largest regions kept, after merging for threshold. |
+| `maxCount` | count | Largest regions kept, after merging for threshold and removing overlaps. |
+| `maxOverlap` | 0-1 | Going from the largest region, a box is dropped when its overlap with a kept box is more than this share of the smaller box's area (padding included). Nested boxes count as 1. 1 turns it off, 0 drops any overlap. Boxes that only touch are kept. |
 | `padding` | source px | Added on every side of each box. |
 | `margin` | source px | Boxes that reach into this band along the image edges, even partly, are dropped. Padding is cut at the band. 0 turns it off. |
 

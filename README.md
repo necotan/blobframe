@@ -30,7 +30,7 @@ Open an image, and blobframe finds regions and frames them. Every part of the lo
 - **Detection**: two methods.
   - Threshold: bright (or dark) regions, found at several brightness levels, so large and small boxes mix.
   - Quadtree: the image is split into smaller cells where it has more detail, so boxes gather around edges and texture.
-  - Min and max box size, max count, blur, and padding are adjustable for both. An edge margin keeps boxes away from the image edges.
+  - Min and max box size, max count, blur, and padding are adjustable for both. An edge margin keeps boxes away from the image edges, and smaller boxes that overlap a larger one can be removed.
 - **Boxes**: solid, dashed, or corner-only outlines; solid or mesh fill.
 - **Inside the boxes**: zoom, blur, mosaic, monochrome, tint, invert, combined freely. The area outside can be dimmed or made monochrome.
 - **Lines**: connect boxes in a chain or to their nearest neighbors, or draw snaplines from the bottom, center, or top of the image to each box, with straight or curved, solid or dashed lines.
