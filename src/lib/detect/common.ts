@@ -89,3 +89,41 @@ export function toRegion(
 export function clamp(v: number, min: number, max: number): number {
   return v < min ? min : v > max ? max : v
 }
+
+/**
+ * 面積の大きい順に maxCount 個まで選び、id を 1 から振って返す。
+ * すでに選んだ箱と maxOverlap を超えて重なる箱と、isDuplicate が true を返す箱は飛ばす。
+ */
+export function pickRegions(
+  candidates: BlobRegion[],
+  s: DetectSettings,
+  isDuplicate?: (kept: BlobRegion, candidate: BlobRegion) => boolean,
+): BlobRegion[] {
+  // 保存データは型しか確かめていない。負の値のままだと重ならない箱まで消えるので範囲に収める
+  const limit = clamp(s.maxOverlap, 0, 1)
+  // 交わりを小さいほうの面積で割るので、入れ子は 1 になり、IoU と違って大きさが違っても確実に消える
+  const overlaps = (a: BlobRegion, b: BlobRegion) => {
+    const inter = intersection(a, b)
+    return inter > 0 && inter / Math.min(a.w * a.h, b.w * b.h) > limit
+  }
+  candidates.sort((a, b) => b.area - a.area)
+  const picked: BlobRegion[] = []
+  for (const c of candidates) {
+    if (picked.length >= s.maxCount) break
+    if (picked.some((p) => isDuplicate?.(p, c) || (limit < 1 && overlaps(p, c)))) continue
+    picked.push(c)
+  }
+  picked.forEach((r, i) => (r.id = i + 1))
+  return picked
+}
+
+export function iou(a: BlobRegion, b: BlobRegion): number {
+  const inter = intersection(a, b)
+  return inter / (a.w * a.h + b.w * b.h - inter)
+}
+
+function intersection(a: BlobRegion, b: BlobRegion): number {
+  const ix = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x))
+  const iy = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y))
+  return ix * iy
+}

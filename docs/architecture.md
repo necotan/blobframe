@@ -71,7 +71,7 @@ image (ImageBitmap; image.ts shrinks it if the device cannot draw it on a canvas
 ## Adding a detection method
 
 1. Add the slug to `DetectSettings['method']` and its parameters to `DetectSettings` with defaults (`docs/settings.md`).
-2. Write the method as a pure function in `src/lib/detect/<method>.ts` that takes the downscaled grayscale (or RGBA) image and returns `BlobRegion[]` in source pixels. Use `toRegion` in `common.ts` to convert a rectangle to source pixels, add padding, and drop boxes that are out of the size range or reach into the edge margin, so `minSize`, `maxSize`, `padding`, and `margin` mean the same in every method. The check must happen before `maxCount` is applied, or margin would lower the box count. Return regions sorted by area, largest first: the `chain` line rule starts from the first region.
+2. Write the method as a pure function in `src/lib/detect/<method>.ts` that takes the downscaled grayscale (or RGBA) image and returns `BlobRegion[]` in source pixels. Use `toRegion` in `common.ts` to convert a rectangle to source pixels, add padding, and drop boxes that are out of the size range or reach into the edge margin, so `minSize`, `maxSize`, `padding`, and `margin` mean the same in every method. Pass the candidates to `pickRegions`, which sorts them by area (largest first: the `chain` line rule starts from the first region), drops overlaps by `maxOverlap` and any method-specific duplicates, applies `maxCount`, and numbers the ids. Size, margin, and overlap checks must all happen before `maxCount`, or they would lower the box count.
 3. Dispatch on `settings.method` in `detect.worker.ts`.
 4. Add the bindings in the Detect folder of `ControlPane.tsx` and hide the parameters of other methods in `syncVisibility`.
 
