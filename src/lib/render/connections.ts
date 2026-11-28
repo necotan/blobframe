@@ -1,23 +1,29 @@
 import type { Settings } from '../settings'
 import type { BlobRegion } from '../types'
 
-type Point = { x: number; y: number }
+export type Point = { x: number; y: number }
+
+/** 線の両端と、それぞれの端の箱。fromBox が null の端は画像の端で、箱の枠では切らない */
+export type Segment = { from: Point; to: Point; fromBox: BlobRegion | null; toBox: BlobRegion }
 
 /**
- * 描く線分の両端を返す。`chain` は regions[0] を起点にするので、検出結果の並び(面積の大きい順)のまま渡すこと。
+ * 描く線を返す。from -> to が矢印の向きになる。
+ * `chain` は regions[0] を起点にするので、検出結果の並び(面積の大きい順)のまま渡すこと。
  */
 export function connectionSegments(
   regions: BlobRegion[],
   s: Settings['lines'],
   imageWidth: number,
   imageHeight: number,
-): [Point, Point][] {
+): Segment[] {
   if (s.rule === 'snapline') return snaplines(regions, s.origin, imageWidth, imageHeight)
   const u = Math.max(imageWidth, imageHeight) / 1000
-  return connectionPairs(regions, s, u).map(([a, b]) => [
-    { x: a.cx, y: a.cy },
-    { x: b.cx, y: b.cy },
-  ])
+  return connectionPairs(regions, s, u).map(([a, b]) => ({
+    from: { x: a.cx, y: a.cy },
+    to: { x: b.cx, y: b.cy },
+    fromBox: a,
+    toBox: b,
+  }))
 }
 
 function connectionPairs(regions: BlobRegion[], s: Settings['lines'], u: number): [BlobRegion, BlobRegion][] {
@@ -36,11 +42,11 @@ function snaplines(
   origin: Settings['lines']['origin'],
   W: number,
   H: number,
-): [Point, Point][] {
+): Segment[] {
   return regions.map((r) => {
-    if (origin === 'top') return [{ x: W / 2, y: 0 }, { x: r.cx, y: r.y }]
-    if (origin === 'center') return [{ x: W / 2, y: H / 2 }, { x: r.cx, y: r.cy }]
-    return [{ x: W / 2, y: H }, { x: r.cx, y: r.y + r.h }]
+    if (origin === 'top') return { from: { x: W / 2, y: 0 }, to: { x: r.cx, y: r.y }, fromBox: null, toBox: r }
+    if (origin === 'center') return { from: { x: W / 2, y: H / 2 }, to: { x: r.cx, y: r.cy }, fromBox: null, toBox: r }
+    return { from: { x: W / 2, y: H }, to: { x: r.cx, y: r.y + r.h }, fromBox: null, toBox: r }
   })
 }
 
@@ -160,7 +166,9 @@ function delaunay(regions: BlobRegion[]): [BlobRegion, BlobRegion][] {
       seen.add(key)
       // ずらす前に一直線に並んでいた点どうしは、間の点を飛ばす細い三角形の辺でもつながる。線が重なるだけなので描かない
       if (unique.some((r) => r !== unique[v] && r !== unique[w] && onSegment(r, unique[v]!, unique[w]!, jitter * 10))) continue
-      pairs.push([unique[v]!, unique[w]!])
+      // 向きのない線なので、矢印が大きい箱から小さい箱へ向くよう、面積順に振った id でそろえる
+      const [p, q] = [unique[v]!, unique[w]!]
+      pairs.push(p.id < q.id ? [p, q] : [q, p])
     }
   }
   return pairs

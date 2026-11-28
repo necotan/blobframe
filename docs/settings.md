@@ -122,6 +122,10 @@ The selected built-in preset is not stored. The panel finds it by comparing the 
 | `color` | `#rrggbb` | |
 | `width` | u | |
 | `opacity` | 0-1 | |
+| `ends` | `center` / `edge` | `center`: lines end at the box center (`snapline`: at the point set by `origin`). `edge`: lines are cut where they leave the box. A line between overlapping or nested boxes has nothing left and is not drawn. |
+| `gap` | u | Stops each box end this far before the `ends` point. With `edge`, the box is grown by `gap`. The image end of a `snapline` is never cut. |
+| `cap` | `none` / `arrow` / `arrows` / `dot` / `bar` | End decoration. `arrow`: at the end only. `arrows`, `dot`, `bar`: at both ends. Arrow direction: `chain` follows the path, `mst` points away from the largest region, `nearest` points to the neighbor, `snapline` points from the image to the box, `delaunay` and `radius` point from the larger region to the smaller. Caps are always solid, even with `dashed`. |
+| `capSize` | u | Arrow length, dot diameter, or bar length. |
 
 ### marker
 

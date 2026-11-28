@@ -41,7 +41,7 @@ What blobframe does and what is planned. How the code is organized is in `docs/a
 - In-box effects, applied in this order and combinable: zoom, blur or mosaic (mosaic wins when both are set; mosaic cells align to one grid over the whole image), monochrome, tint (keeps brightness, replaces hue and saturation), invert.
 - Fill: none, solid, mesh (spacing and line width).
 - Stroke: on or off, solid, dashed, or corners only.
-- Lines: none, chain (greedy nearest path from the largest region), nearest k, minimum spanning tree, Delaunay triangulation, all pairs within a radius, snapline (from the bottom, center, or top of the image to each region); straight or curved (curvature); dashed; color, width, opacity.
+- Lines: none, chain (greedy nearest path from the largest region), nearest k, minimum spanning tree, Delaunay triangulation, all pairs within a radius, snapline (from the bottom, center, or top of the image to each region); straight or curved (curvature); dashed; color, width, opacity; ends at the box center or cut at the box edge, with a gap; end caps (arrow at the end, arrows at both ends, dots, bars).
 - Marker: none, cross, dot, circle.
 - Label: template (`{x:03}` style placeholders), coordinates in pixels or 0-100, position, overlap handling (allow, move to a free position, or move and hide when none is free), font size, colors, background band.
 - Output: JPEG (default), PNG, or WebP; quality for JPEG and WebP; scale 0.1-1 of the source resolution, redrawn at that size so lines and labels stay sharp. Export settings are kept in the browser apart from the look settings, so presets do not change them.
@@ -58,7 +58,7 @@ What blobframe does and what is planned. How the code is organized is in `docs/a
 - Detection options: aspect ratio limit, sort order (area, brightness, position).
 - In-box effects: threshold, edge, posterize, thermal color map, RGB shift; stacking several; a random effect per box.
 - Fill: hatching, dots, scanlines; blend mode.
-- Lines: random; elbow and arc shapes; arrows; start from the box edge instead of the center.
+- Lines: random; elbow and arc shapes.
 - Marker: crosshair.
 - Label: more values (color hex, score), more positions.
 - Background: vignette, scanlines, noise, grid.

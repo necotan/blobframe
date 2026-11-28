@@ -68,6 +68,17 @@ export type Settings = {
     color: string
     width: number
     opacity: number
+    /** 線の両端を置く位置。edge は箱の枠で線を切り、center は箱の中心(snapline は箱の辺の中央)で止める */
+    ends: 'center' | 'edge'
+    /** ends の位置から、この距離(u)だけ手前で線を止める */
+    gap: number
+    /**
+     * 線の端の飾り。arrow は終わり側だけに付ける。向きは chain が道順、mst が一番大きい箱から外へ、
+     * nearest が近い箱へ、snapline が画像の端から箱へ、delaunay と radius が大きい箱から小さい箱へ
+     */
+    cap: 'none' | 'arrow' | 'arrows' | 'dot' | 'bar'
+    /** 飾りの大きさ(u)。矢印の長さ、点の直径、横棒の長さ */
+    capSize: number
   }
   marker: {
     shape: 'none' | 'cross' | 'dot' | 'circle'
@@ -146,6 +157,10 @@ export const DEFAULT_SETTINGS: Settings = {
     color: WHITE,
     width: 1,
     opacity: 0.6,
+    ends: 'center',
+    gap: 0,
+    cap: 'none',
+    capSize: 6,
   },
   marker: {
     shape: 'cross',
