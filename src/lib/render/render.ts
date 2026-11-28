@@ -103,13 +103,16 @@ function drawEffects(
     scratch ??= document.createElement('canvas')
     scratch.width = w
     scratch.height = h
-    const sctx = scratch.getContext('2d')!
-    sctx.imageSmoothingQuality = 'high'
-    // 格子にそろえて広げた範囲に対応する元画像の範囲。ズーム中は箱の中心を基準に 1/zoom に縮める
-    sctx.drawImage(source, sx + (x0 - r.x) / z, sy + (y0 - r.y) / z, (w * cell) / z, (h * cell) / z, 0, 0, w, h)
-    ctx.imageSmoothingEnabled = mosaic <= 0
-    ctx.imageSmoothingQuality = 'high'
-    ctx.drawImage(scratch, x0, y0, w * cell, h * cell)
+    const sctx = scratch.getContext('2d')
+    // iOS で canvas のメモリ上限を超えると null になる。例外で描画全体を止めないよう、ぼかしとモザイクだけ諦める
+    if (sctx) {
+      sctx.imageSmoothingQuality = 'high'
+      // 格子にそろえて広げた範囲に対応する元画像の範囲。ズーム中は箱の中心を基準に 1/zoom に縮める
+      sctx.drawImage(source, sx + (x0 - r.x) / z, sy + (y0 - r.y) / z, (w * cell) / z, (h * cell) / z, 0, 0, w, h)
+      ctx.imageSmoothingEnabled = mosaic <= 0
+      ctx.imageSmoothingQuality = 'high'
+      ctx.drawImage(scratch, x0, y0, w * cell, h * cell)
+    }
   } else if (zoom > 1 || backgroundChanged) {
     ctx.drawImage(source, sx, sy, sw, sh, r.x, r.y, r.w, r.h)
   }

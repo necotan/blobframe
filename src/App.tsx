@@ -57,9 +57,11 @@ export default function App() {
   const [detection, setDetection] = useState<Detection | null>(null)
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [fontReady, setFontReady] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const detectorRef = useRef<ReturnType<typeof createDetector> | null>(null)
+  const loadIdRef = useRef(0)
 
   useEffect(() => {
     let active = true
@@ -102,7 +104,9 @@ export default function App() {
       canvas.width = image.width
       canvas.height = image.height
     }
-    render(canvas.getContext('2d')!, image, regions, settings)
+    const ctx = canvas.getContext('2d')
+    // iOS は canvas のメモリ上限を超えると null を返す。例外にすると React が画面全体を外して真っ白になる
+    if (ctx) render(ctx, image, regions, settings)
     // fontReady は描画には使わないが、フォント読み込み後にラベルを描き直すために依存に入れる
   }, [image, regions, settings, fontReady])
 
@@ -117,17 +121,24 @@ export default function App() {
   }, [])
 
   const loadFile = useCallback(async (file: File | null | undefined) => {
-    if (!file || !file.type.startsWith('image/')) return
+    // file.type は端末や選び方によって空や想定外の値になるので、種類では弾かずに読み込めるかで判断する
+    if (!file) return
+    const id = ++loadIdRef.current
+    setLoading(true)
+    setError(false)
     try {
       const { bitmap, original } = await loadImage(file)
-      setError(false)
+      // 大きな画像の読み込み中に次の画像が選ばれたら、遅れて終わった古いほうは捨てる
+      if (id !== loadIdRef.current) return bitmap.close()
       setOriginalSize(original)
       setImage((prev) => {
         prev?.close()
         return bitmap
       })
     } catch {
-      setError(true)
+      if (id === loadIdRef.current) setError(true)
+    } finally {
+      if (id === loadIdRef.current) setLoading(false)
     }
   }, [])
 
@@ -143,12 +154,15 @@ export default function App() {
       target = document.createElement('canvas')
       target.width = Math.max(1, Math.round(image.width * scale))
       target.height = Math.max(1, Math.round(image.height * scale))
-      const ctx = target.getContext('2d')!
+      const ctx = target.getContext('2d')
+      if (!ctx) return
       ctx.imageSmoothingQuality = 'high'
       ctx.scale(target.width / image.width, target.height / image.height)
       render(ctx, image, regions, settings)
     }
     const blob = await new Promise<Blob | null>((resolve) => target.toBlob(resolve, `image/${format}`, quality))
+    // iOS は canvas のメモリをすぐには返さず上限に数えたままにするので、書き出し用に作った分は大きさを0にして手放す
+    if (target !== canvas) target.width = target.height = 0
     if (blob) downloadBlob(blob, `blobframe-${timestamp()}.${extensionOf(blob)}`)
   }, [image, regions, settings])
 
@@ -193,6 +207,7 @@ export default function App() {
             >
               Open image
             </button>
+            {loading && <p className="text-sm text-neutral-400">Loading...</p>}
             {error && <p className="text-sm text-red-400">Could not read this image</p>}
           </div>
         )}
@@ -200,6 +215,8 @@ export default function App() {
           <p className="absolute bottom-2 left-4 font-mono text-xs text-neutral-500">
             {originalSize && `${originalSize.width}x${originalSize.height} -> `}
             {image.width}x{image.height} / {regions.length} blobs
+            {loading && ' / Loading...'}
+            {error && <span className="text-red-400"> / Could not read this image</span>}
           </p>
         )}
       </main>
