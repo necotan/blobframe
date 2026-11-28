@@ -56,8 +56,10 @@ export type Settings = {
     width: number
   }
   lines: {
-    rule: 'none' | 'chain' | 'nearest' | 'snapline'
+    rule: 'none' | 'chain' | 'nearest' | 'mst' | 'delaunay' | 'radius' | 'snapline'
     neighbors: number
+    /** radius: 中心どうしがこの距離(u)以内の箱をすべて結ぶ */
+    radius: number
     /** snapline: 線を出す画像上の点。bottom と top は辺の中央から箱の同じ側の辺の中央へ、center は中心同士を結ぶ */
     origin: 'bottom' | 'center' | 'top'
     shape: 'straight' | 'curve'
@@ -136,6 +138,7 @@ export const DEFAULT_SETTINGS: Settings = {
   lines: {
     rule: 'nearest',
     neighbors: 1,
+    radius: 150,
     origin: 'bottom',
     shape: 'straight',
     curvature: 0.3,
